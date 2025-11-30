@@ -1,25 +1,22 @@
 import os
 import random
+import re
 import smtplib
-from email.mime.text import MIMEText
 from datetime import datetime, timedelta
+from email.mime.text import MIMEText
+from os.path import dirname, join
 
 from aiogram import Bot, types
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.context import FSMContext
-
-from os.path import join, dirname
-from components.shared.locale import load_locales, get_locale_str
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from components.participant_registration.logic.states import RegisterStates
-
+from components.shared.locale import get_locale_str, load_locales
 from database.db import (
-    register_user_from_state,
-    get_user_by_tg_name,
     get_user_by_email,
+    get_user_by_tg_name,
+    register_user_from_state,
     update_user_from_state,
 )
-
-import re
 
 locale = load_locales(join(dirname(__file__), "..", "locale"))
 
@@ -28,6 +25,7 @@ shared = "participant_registration.shared"
 
 EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
 VERIFICATION_CODES = {}
+
 
 def getstr(lang, prefix, path):
     return get_locale_str(locale, f"{lang}.{prefix}.{path}")
@@ -55,9 +53,9 @@ async def pr_cb_user_my_data(
 
         await callback_query.message.edit_text(
             text=f"{getstr(lang, prefix, 'show_info.fio')}: {user_data.get('last_name', '')} "
-                 f"{user_data.get('first_name', '')} {user_data.get('middle_name', '')}\n"
-                 f"{getstr(lang, prefix, 'show_info.phone')}: {user_data.get('phone', '')}\n"
-                 f"{getstr(lang, prefix, 'show_info.email')}: {user_data.get('email', '')}",
+            f"{user_data.get('first_name', '')} {user_data.get('middle_name', '')}\n"
+            f"{getstr(lang, prefix, 'show_info.phone')}: {user_data.get('phone', '')}\n"
+            f"{getstr(lang, prefix, 'show_info.email')}: {user_data.get('email', '')}",
             reply_markup=keyboard.as_markup(),
         )
     else:
@@ -124,7 +122,7 @@ def validate_phone(phone_number):
     Acceptable formats:
     +7XXX..., 8XXX..., 7XXX...
     """
-    pattern = r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$'
+    pattern = r"^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$"
     return re.match(pattern, phone_number) is not None
 
 
@@ -139,19 +137,23 @@ async def pr_cb_handle_email_input(message: types.Message, state: FSMContext):
         return
 
     if not status and not isinstance(get_user_by_email(email), type(None)):
-        await message.answer(text=getstr(lang, prefix, "error.wrong_email.email_already_used_caption"))
+        await message.answer(
+            text=getstr(lang, prefix, "error.wrong_email.email_already_used_caption")
+        )
         return
 
     verification_code = str(random.randint(100000, 999999))
     VERIFICATION_CODES[message.from_user.id] = {
         "code": verification_code,
-        "expires": datetime.now() + timedelta(minutes=15)
+        "expires": datetime.now() + timedelta(minutes=15),
     }
 
     email_sent = await send_verification_email(email, verification_code, lang)
 
     if not email_sent:
-        await message.answer(text=getstr(lang, prefix, "error.sending_code_error.caption"))
+        await message.answer(
+            text=getstr(lang, prefix, "error.sending_code_error.caption")
+        )
         return
 
     await state.update_data(email=email)
@@ -166,8 +168,13 @@ async def pr_cb_handle_verification_code(message: types.Message, state: FSMConte
     user_code = message.text.strip()
     user_id = message.from_user.id
 
-    if user_id not in VERIFICATION_CODES or datetime.now() > VERIFICATION_CODES[user_id]["expires"]:
-        await message.answer(text=getstr(lang, prefix, "email_confirm.code_expired_caption"))
+    if (
+        user_id not in VERIFICATION_CODES
+        or datetime.now() > VERIFICATION_CODES[user_id]["expires"]
+    ):
+        await message.answer(
+            text=getstr(lang, prefix, "email_confirm.code_expired_caption")
+        )
         await state.clear()
         return
 
@@ -188,16 +195,18 @@ async def pr_cb_handle_verification_code(message: types.Message, state: FSMConte
 async def send_verification_email(email: str, code: str, lang: str):
     """Sends an email with a confirmation code"""
     msg = MIMEText(
-        f"{getstr(lang, prefix, "email_confirm.email_text_caption_part1")} {code}\n\n"
-        f"{getstr(lang, prefix, "email_confirm.email_text_caption_part2")}"
+        f"{getstr(lang, prefix, 'email_confirm.email_text_caption_part1')} {code}\n\n"
+        f"{getstr(lang, prefix, 'email_confirm.email_text_caption_part2')}"
     )
-    msg['Subject'] = getstr(lang, prefix, "email_confirm.email_subject_caption")
-    msg['From'] = EMAIL_FROM
-    msg['To'] = email
+    msg["Subject"] = getstr(lang, prefix, "email_confirm.email_subject_caption")
+    msg["From"] = EMAIL_FROM
+    msg["To"] = email
 
     try:
-        with smtplib.SMTP_SSL(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as server:
-            server.login(os.getenv("SMTP_USERNAME"), os.getenv("TG_BOT_EMAIL_PASSWORD"))
+        with smtplib.SMTP_SSL(
+            os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))
+        ) as server:
+            server.login(os.getenv("SMTP_USERNAME"), os.getenv("SMTP_PASSWORD"))
             server.send_message(msg)
         return True
     except Exception as e:

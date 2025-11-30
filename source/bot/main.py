@@ -2,21 +2,18 @@ import asyncio
 import logging
 import os
 import sys
-
-from os.path import join, dirname
-from dotenv import load_dotenv
-
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+from os.path import dirname, join
 
 import components.main_menu.router as main_menu
 import components.participant_drawer.router as participant_drawer
 import components.participant_registration.router as participant_registration
 import components.program_generator.router as program_generator
 import components.reports_evaluation.router as reports_evaluation
-
+from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from components.shared.db import Database
+from dotenv import load_dotenv
 from middlewares.db import DatabaseMiddleware
 
 
@@ -38,7 +35,7 @@ async def main() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     load_dotenv(dotenv_dir)
 
-    db_path = join(dirname(__file__), "database", "instance", "digital_event_manager.db")
+    db_path = join(dirname(__file__), "digital_event_manager.db")
     db = Database(db_path).connect()
 
     bot = Bot(
