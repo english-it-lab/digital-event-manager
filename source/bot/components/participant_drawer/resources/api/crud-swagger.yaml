@@ -1,0 +1,203 @@
+openapi: 3.0.0
+info:
+  title: Topics and Draw results API
+  version: 1.0.0
+  description: >
+    Этот API предназначен для управления темами мероприятий и просмотра результатов жеребьёвки.
+    Позволяет создавать, редактировать и удалять темы, а также получать распределение тем между группами участников.
+
+servers:
+  - url: /api/v1
+    description: "Базовый путь API"
+
+tags:
+  - name: Draw
+    description: Эндпоинты для работы с темами и результатами жеребьёвки
+
+paths:
+  /sections/{sectionId}/topics:
+    get:
+      tags: [Draw]
+      summary: Получить список тем для секции
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        200:
+          description: Список тем
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Topic"
+
+    post:
+      tags: [Draw]
+      summary: Создать новую тему для секции
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicCreate"
+      responses:
+        201:
+          description: Тема создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topic"
+        400:
+          description: Некорректные данные
+        404:
+          description: Секция не найдена
+
+  /topics/{topicId}:
+    put:
+      tags: [Draw]
+      summary: Обновить тему
+      parameters:
+        - in: path
+          name: topicId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicUpdate"
+      responses:
+        200:
+          description: Тема обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topic"
+        409:
+          description: Нельзя обновить тему — она уже назначена группе
+        404:
+          description: Тема не найдена
+
+    delete:
+      tags: [Draw]
+      summary: Удалить тему
+      parameters:
+        - in: path
+          name: topicId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        204:
+          description: Тема удалена
+        409:
+          description: Нельзя удалить — тема уже назначена группе
+        404:
+          description: Тема не найдена
+
+  /sections/{sectionId}/draw/results:
+    get:
+      tags: [Draw]
+      summary: Получить результаты жеребьёвки (распределение тем по группам)
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        200:
+          description: Результаты распределения тем
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DrawResult"
+        404:
+          description: Секция не найдена
+
+components:
+  schemas:
+    Topic:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        section_id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+      required:
+        - id
+        - section_id
+        - name
+
+    TopicCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+
+    TopicUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+
+    DrawResult:
+      type: object
+      description: "Распределение тем по группам"
+      properties:
+        group_id:
+          type: integer
+          minimum: 1
+        group_name:
+          type: string
+          minLength: 1
+        topics:
+          type: array
+          description: "Список тем, назначенных группе (обычно 1)"
+          items:
+            type: object
+            properties:
+              topic_id:
+                type: integer
+                minimum: 1
+              topic_name:
+                type: string
+                minLength: 3
+                maxLength: 50
+            required:
+              - topic_id
+              - topic_name
+      required:
+        - group_id
+        - group_name
+        - topics
