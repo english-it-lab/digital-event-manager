@@ -65,6 +65,25 @@ paths:
           description: Секция не найдена
 
   /topics/{topicId}:
+    get:
+      tags: [ Draw ]
+      summary: Получить тему по ID
+      parameters:
+          -   in: path
+              name: topicId
+              required: true
+              schema:
+                  type: integer
+                  minimum: 1
+      responses:
+          200:
+              description: Тема найдена
+              content:
+                  application/json:
+                      schema:
+                          $ref: "#/components/schemas/Topic"
+          404:
+              description: Тема не найдена
     put:
       tags: [Draw]
       summary: Обновить тему
@@ -88,10 +107,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Topic"
+        400:
+            description: Некорректные данные
         409:
-          description: Нельзя обновить тему — она уже назначена группе
+            description: Нельзя обновить тему — она уже назначена группе
         404:
-          description: Тема не найдена
+            description: Тема не найдена
 
     delete:
       tags: [Draw]
@@ -164,12 +185,16 @@ components:
           maxLength: 50
 
     TopicUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 50
+        type: object
+        properties:
+            name:
+                type: string
+                minLength: 3
+                maxLength: 50
+            section_id:
+                type: integer
+                minimum: 1
+        description: "Данные для обновления темы. Можно менять название и/или секцию."
 
     DrawResult:
       type: object
