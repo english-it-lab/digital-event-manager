@@ -155,6 +155,25 @@ paths:
         404:
           description: Секция не найдена
 
+  /sections/{sectionId}/draw/run:
+    post:
+      tags: [Draw]
+      summary: Запустить жеребьёвку (распределить темы секции по группам)
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        201:
+          description: Темы секции распределены
+        404:
+          description: Секция не найдена
+        409:
+          description: Недостаточно групп и/или тем для распределения
+
 components:
   schemas:
     Topic:
