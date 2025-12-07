@@ -1,0 +1,10 @@
+.venv/
+.env
+__pycache__
+
+*.swp
+
+source/bot/database/instance/*.db
+
+.idea/
+.idea

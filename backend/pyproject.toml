@@ -1,0 +1,15 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Digital event manager backend"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic",
+    "asyncpg",
+    "fastapi",
+    "pydantic-settings",
+    "python-dotenv",
+    "sqlalchemy",
+    "uvicorn[standard]",
+]
