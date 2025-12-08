@@ -18,7 +18,9 @@ jobs:
           enable-cache: true
 
       - name: Check formatting
+        working-directory: ./backend
         run: uvx ruff format . --check --diff
 
       - name: Run linter
+        working-directory: ./backend
         run: uvx ruff check --output-format=github .
