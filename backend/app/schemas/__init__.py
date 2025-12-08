@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, constr
+from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
 
 
 class ORMModelMixin:
@@ -348,8 +349,15 @@ class OrganizerParticipantChangeRead(
 
 class TechnicalRequirementBase(BaseModel):
     topic_id: int | None = None
-    format: str | None = None
-    sizes: str | None = None
+    format: Literal["PDF", "PNG", "JPG", "JPEG"] | None = None
+    sizes: Literal["A4", "A3", "A2", "A1"] | None = None
+
+    @field_validator("format")
+    @classmethod
+    def validate_format(cls, v: str | None) -> str | None:
+        if v is not None:
+            v = v.upper()
+        return v
 
 
 class TechnicalRequirementCreate(TechnicalRequirementBase):
@@ -358,6 +366,26 @@ class TechnicalRequirementCreate(TechnicalRequirementBase):
 
 class TechnicalRequirementRead(ORMModelMixin, TechnicalRequirementBase):
     id: int
+
+
+class TechnicalRequirementUpdate(BaseModel):
+    topic_id: int | None = None
+    format: Literal["PDF", "PNG", "JPG", "JPEG"] | None = None
+    sizes: Literal["A4", "A3", "A2", "A1"] | None = None
+
+    @field_validator("format")
+    @classmethod
+    def validate_format(cls, v: str | None) -> str | None:
+        if v is not None:
+            v = v.upper()
+        return v
+
+
+class TechnicalRequirementReadWithContent(
+    ORMModelMixin, TechnicalRequirementBase
+):
+    id: int
+    posters_content: list[PosterContentRead] = []
 
 
 class PosterContentBase(BaseModel):
@@ -372,6 +400,12 @@ class PosterContentCreate(PosterContentBase):
 
 class PosterContentRead(ORMModelMixin, PosterContentBase):
     id: int
+
+
+class PosterContentUpdate(BaseModel):
+    technical_requirements_id: int | None = None
+    words_amount: int | None = None
+    images_amount: int | None = None
 
 
 __all__ = [
@@ -448,7 +482,10 @@ __all__ = [
     "TechnicalRequirementBase",
     "TechnicalRequirementCreate",
     "TechnicalRequirementRead",
+    "TechnicalRequirementUpdate",
+    "TechnicalRequirementReadWithContent",
     "PosterContentBase",
     "PosterContentCreate",
     "PosterContentRead",
+    "PosterContentUpdate",
 ]
