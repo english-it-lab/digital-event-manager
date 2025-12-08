@@ -340,7 +340,9 @@ class OrganizerParticipantChangeCreate(OrganizerParticipantChangeBase):
     pass
 
 
-class OrganizerParticipantChangeRead(ORMModelMixin, OrganizerParticipantChangeBase):
+class OrganizerParticipantChangeRead(
+    ORMModelMixin, OrganizerParticipantChangeBase
+):
     id: int
 
 

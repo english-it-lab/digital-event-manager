@@ -1,0 +1,24 @@
+name: Code Style Checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Check formatting
+        run: uvx ruff format . --check --diff
+
+      - name: Run linter
+        run: uvx ruff check --output-format=github .

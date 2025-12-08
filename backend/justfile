@@ -1,0 +1,7 @@
+# Format the entire codebase
+format:
+    uvx ruff format
+
+# Check for linter errors and automatically fix the fixable ones
+lint:
+    uvx ruff check --fix

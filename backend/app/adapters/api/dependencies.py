@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,7 +15,7 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 
 
 def get_university_service(
-    session: AsyncSession = Depends(get_session),
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> UniversityService:
     repository = UniversityRepository(session)
     return UniversityService(repository)
