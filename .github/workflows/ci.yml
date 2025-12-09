@@ -37,4 +37,28 @@ jobs:
         image: ${{ vars.REGISTRY_URL }}/${{ github.repository }}/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
       secrets:
         registry-user: ${{ secrets.REGISTRY_USER }}
-        registry-token: ${{ secrets.REGISTRY_TOKEN }}    
+        registry-token: ${{ secrets.REGISTRY_TOKEN }}
+
+  deploy:
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [ build, resolve-env ]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.resolve-env.outputs.environment }}
+    steps:
+      - uses: PANiXiDA-Infrastructure/ci-cd/.github/actions/ssh-docker-deploy@main
+        with:
+          server-user: ${{ vars.SERVER_USER }}
+          server-host: ${{ vars.SERVER_HOST }}
+          ssh-port: ${{ vars.SERVER_SSH_PORT }}
+          ssh-private-key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+
+          service-folder: ${{ vars.PROJECT_FOLDER }}/${{ github.event.repository.name }}/${{ vars.SERVICE_NAME }}
+
+          container-name: ${{ github.event.repository.name }}-${{ vars.SERVICE_NAME }}-${{ vars.ENV_SUFFIX }}
+          image: ${{ vars.REGISTRY_URL }}/${{ github.repository }}/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
+
+          env-file: ${{ secrets.ENV_FILE }}
+
+          registry-url: ${{ vars.REGISTRY_URL }}
+          registry-user: ${{ secrets.REGISTRY_USER }}
+          registry-token: ${{ secrets.REGISTRY_TOKEN }}        
