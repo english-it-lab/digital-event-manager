@@ -1,6 +1,7 @@
 name: Code Style Checks
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -18,9 +19,24 @@ jobs:
           enable-cache: true
 
       - name: Check formatting
-        working-directory: ./backend
+        working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
         run: uvx ruff format . --check --diff
 
       - name: Run linter
-        working-directory: ./backend
+        working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
         run: uvx ruff check --output-format=github .
+
+  resolve-env:
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: PANiXiDA-Infrastructure/ci-cd/.github/workflows/resolve-environment.yml@main
+
+  build:
+      if: ${{ github.event_name != 'pull_request' }}
+      needs: [ ruff ]
+      uses: PANiXiDA-Infrastructure/ci-cd/.github/workflows/docker-build.yml@main
+      with:
+        service-folder: ${{ vars.SERVICE_FOLDER }}
+        image: ${{ vars.REGISTRY_URL }}/${{ github.repository }}/${{ vars.SERVICE_NAME }}:${{ github.run_number }}
+      secrets:
+        registry-user: ${{ secrets.REGISTRY_USER }}
+        registry-token: ${{ secrets.REGISTRY_TOKEN }}    
