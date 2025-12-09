@@ -35,9 +35,9 @@ async def get_technical_requirement(
     service: Annotated[
         TechnicalRequirementService, Depends(get_technical_requirement_service)
     ],
-    include_content: Annotated[
-        bool, Query(default=True, description="Include related poster content")
-    ],
+    include_content: bool = Query(
+        default=True, description="Include related poster content"
+    ),
 ) -> TechnicalRequirementReadWithContent:
     """
     Retrieve a technical requirement by ID.
