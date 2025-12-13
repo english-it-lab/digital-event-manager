@@ -1,6 +1,4 @@
 from aiogram import Bot, Router, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from components.participant_drawer.frontend import frontend_cb_pd_main
 

@@ -1,6 +1,4 @@
-from aiogram import Bot, Router, types
-from aiogram.filters import CommandStart
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram import Bot, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from os.path import join, dirname

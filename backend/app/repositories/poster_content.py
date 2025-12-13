@@ -19,9 +19,7 @@ class PosterContentRepository:
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
-    async def get_poster_content_by_id(
-        self, content_id: int
-    ) -> PosterContent | None:
+    async def get_poster_content_by_id(self, content_id: int) -> PosterContent | None:
         """
         Retrieve poster content by ID.
 
@@ -35,9 +33,7 @@ class PosterContentRepository:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_poster_content(
-        self, data: PosterContentCreate
-    ) -> PosterContent:
+    async def create_poster_content(self, data: PosterContentCreate) -> PosterContent:
         """Create new poster content."""
         content = PosterContent(
             technical_requirements_id=data.technical_requirements_id,
@@ -49,9 +45,7 @@ class PosterContentRepository:
         await self._session.refresh(content)
         return content
 
-    async def update_poster_content(
-        self, content: PosterContent, data: PosterContentUpdate
-    ) -> PosterContent:
+    async def update_poster_content(self, content: PosterContent, data: PosterContentUpdate) -> PosterContent:
         """
         Update existing poster content.
 

@@ -341,9 +341,7 @@ class OrganizerParticipantChangeCreate(OrganizerParticipantChangeBase):
     pass
 
 
-class OrganizerParticipantChangeRead(
-    ORMModelMixin, OrganizerParticipantChangeBase
-):
+class OrganizerParticipantChangeRead(ORMModelMixin, OrganizerParticipantChangeBase):
     id: int
 
 
@@ -381,9 +379,7 @@ class TechnicalRequirementUpdate(BaseModel):
         return v
 
 
-class TechnicalRequirementReadWithContent(
-    ORMModelMixin, TechnicalRequirementBase
-):
+class TechnicalRequirementReadWithContent(ORMModelMixin, TechnicalRequirementBase):
     id: int
     posters_content: list[PosterContentRead] = []
 

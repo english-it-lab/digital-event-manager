@@ -1,5 +1,4 @@
-from aiogram import Bot, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from os.path import join, dirname
 from components.shared.locale import load_locales, get_locale_str
