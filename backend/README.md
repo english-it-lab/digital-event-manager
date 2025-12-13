@@ -3,7 +3,7 @@
 FastAPI + PostgreSQL backend bootstrapped with **uv**, **SQLAlchemy 2.0**, and **Alembic**. The codebase follows a layered layout (repository → service → adapter) so that persistence, business rules, and delivery stay isolated.
 
 ## Requirements
-- Python 3.13
+- Python 3.12
 - [uv](https://github.com/astral-sh/uv) (already recorded via `pyproject.toml` + `uv.lock`)
 - Docker (optional but recommended for local infra)
 
@@ -18,7 +18,6 @@ Use `uv run <command>` to execute anything inside the virtual environment, e.g. 
 ### Generate API
 
 #### Requirements
-- **Python 3.12**
 - **C++ Build Tools**
 - **Rust toolchain**
 
