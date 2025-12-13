@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 source .venv/Scripts/activate
 pip install openapi-generator-cli
 openapi-generator-cli generate -i resources/api/v1/draw.yaml -g python-fastapi -o generated/

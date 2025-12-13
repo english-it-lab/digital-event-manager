@@ -12,6 +12,9 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
+COPY generate_api.sh /generate_api.sh
+RUN chmod +x /generate_api.sh
+
 COPY alembic alembic
 COPY app app
 COPY alembic.ini main.py ./
