@@ -25,9 +25,7 @@ class University(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    faculties: Mapped[list[Faculty]] = relationship(
-        back_populates="university"
-    )
+    faculties: Mapped[list[Faculty]] = relationship(back_populates="university")
     teachers: Mapped[list[Teacher]] = relationship(back_populates="university")
     juries: Mapped[list[Jury]] = relationship(back_populates="university")
 
@@ -36,17 +34,11 @@ class Faculty(Base):
     __tablename__ = "faculties"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    university_id: Mapped[int | None] = mapped_column(
-        ForeignKey("universities.id", ondelete="SET NULL")
-    )
+    university_id: Mapped[int | None] = mapped_column(ForeignKey("universities.id", ondelete="SET NULL"))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    university: Mapped[University | None] = relationship(
-        back_populates="faculties"
-    )
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="faculty"
-    )
+    university: Mapped[University | None] = relationship(back_populates="faculties")
+    participants: Mapped[list[Participant]] = relationship(back_populates="faculty")
 
 
 class Department(Base):
@@ -74,9 +66,7 @@ class Person(Base):
 
     organizers: Mapped[list[Organizer]] = relationship(back_populates="person")
     teachers: Mapped[list[Teacher]] = relationship(back_populates="person")
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="person"
-    )
+    participants: Mapped[list[Participant]] = relationship(back_populates="person")
     juries: Mapped[list[Jury]] = relationship(back_populates="person")
 
 
@@ -84,20 +74,14 @@ class Organizer(Base):
     __tablename__ = "organizers"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    person_id: Mapped[int | None] = mapped_column(
-        ForeignKey("people.id", ondelete="SET NULL")
-    )
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
     contact_number: Mapped[str | None] = mapped_column(String(15))
     access_key: Mapped[int | None] = mapped_column(BigInteger)
 
     person: Mapped[Person | None] = relationship(back_populates="organizers")
     events: Mapped[list[Event]] = relationship(back_populates="organizer")
-    section_changes: Mapped[list[OrganizerSectionChange]] = relationship(
-        back_populates="organizer"
-    )
-    participant_changes: Mapped[list[OrganizerParticipantChange]] = (
-        relationship(back_populates="organizer")
-    )
+    section_changes: Mapped[list[OrganizerSectionChange]] = relationship(back_populates="organizer")
+    participant_changes: Mapped[list[OrganizerParticipantChange]] = relationship(back_populates="organizer")
 
 
 class Venue(Base):
@@ -115,21 +99,15 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    venue_id: Mapped[int | None] = mapped_column(
-        ForeignKey("venues.id", ondelete="SET NULL")
-    )
-    organizer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("organizers.id", ondelete="SET NULL")
-    )
+    venue_id: Mapped[int | None] = mapped_column(ForeignKey("venues.id", ondelete="SET NULL"))
+    organizer_id: Mapped[int | None] = mapped_column(ForeignKey("organizers.id", ondelete="SET NULL"))
     name: Mapped[str | None] = mapped_column(String(255))
     type: Mapped[str | None] = mapped_column(String(100))
     event_date: Mapped[Date | None] = mapped_column(Date)
 
     venue: Mapped[Venue | None] = relationship(back_populates="events")
     organizer: Mapped[Organizer | None] = relationship(back_populates="events")
-    event_sections: Mapped[list[EventSection]] = relationship(
-        back_populates="event"
-    )
+    event_sections: Mapped[list[EventSection]] = relationship(back_populates="event")
 
 
 class Course(Base):
@@ -138,9 +116,7 @@ class Course(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int | None] = mapped_column(Integer)
 
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="course"
-    )
+    participants: Mapped[list[Participant]] = relationship(back_populates="course")
 
 
 class TextbookLevel(Base):
@@ -149,9 +125,7 @@ class TextbookLevel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     level_abbreviation: Mapped[str | None] = mapped_column(String(3))
 
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="textbook_level"
-    )
+    participants: Mapped[list[Participant]] = relationship(back_populates="textbook_level")
 
 
 class Section(Base):
@@ -164,30 +138,18 @@ class Section(Base):
 
     topics: Mapped[list[Topic]] = relationship(back_populates="section")
     groups: Mapped[list[Group]] = relationship(back_populates="section")
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="section"
-    )
-    section_juries: Mapped[list[SectionJury]] = relationship(
-        back_populates="section"
-    )
-    organizer_changes: Mapped[list[OrganizerSectionChange]] = relationship(
-        back_populates="section"
-    )
-    event_links: Mapped[list[EventSection]] = relationship(
-        back_populates="section"
-    )
+    participants: Mapped[list[Participant]] = relationship(back_populates="section")
+    section_juries: Mapped[list[SectionJury]] = relationship(back_populates="section")
+    organizer_changes: Mapped[list[OrganizerSectionChange]] = relationship(back_populates="section")
+    event_links: Mapped[list[EventSection]] = relationship(back_populates="section")
 
 
 class EventSection(Base):
     __tablename__ = "event_sections"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id: Mapped[int] = mapped_column(
-        ForeignKey("events.id", ondelete="CASCADE")
-    )
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id", ondelete="CASCADE")
-    )
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"))
+    section_id: Mapped[int] = mapped_column(ForeignKey("sections.id", ondelete="CASCADE"))
 
     event: Mapped[Event] = relationship(back_populates="event_sections")
     section: Mapped[Section] = relationship(back_populates="event_links")
@@ -197,52 +159,34 @@ class Topic(Base):
     __tablename__ = "topics"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    section_id: Mapped[int | None] = mapped_column(
-        ForeignKey("sections.id", ondelete="SET NULL")
-    )
+    section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
     name: Mapped[str | None] = mapped_column(String(50))
 
     section: Mapped[Section | None] = relationship(back_populates="topics")
-    technical_requirements: Mapped[list[TechnicalRequirement]] = relationship(
-        back_populates="topic"
-    )
-    group_topics: Mapped[list[GroupTopic]] = relationship(
-        back_populates="topic"
-    )
+    technical_requirements: Mapped[list[TechnicalRequirement]] = relationship(back_populates="topic")
+    group_topics: Mapped[list[GroupTopic]] = relationship(back_populates="topic")
 
 
 class Group(Base):
     __tablename__ = "groups"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    section_id: Mapped[int | None] = mapped_column(
-        ForeignKey("sections.id", ondelete="SET NULL")
-    )
+    section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
     name: Mapped[str | None] = mapped_column(String(100))
     member_count: Mapped[int | None] = mapped_column(Integer)
-    registration_time: Mapped[DateTime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
+    registration_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
 
     section: Mapped[Section | None] = relationship(back_populates="groups")
-    group_topics: Mapped[list[GroupTopic]] = relationship(
-        back_populates="group"
-    )
-    group_participants: Mapped[list[GroupParticipant]] = relationship(
-        back_populates="group"
-    )
+    group_topics: Mapped[list[GroupTopic]] = relationship(back_populates="group")
+    group_participants: Mapped[list[GroupParticipant]] = relationship(back_populates="group")
 
 
 class GroupTopic(Base):
     __tablename__ = "group_topics"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("groups.id", ondelete="CASCADE")
-    )
-    topic_id: Mapped[int | None] = mapped_column(
-        ForeignKey("topics.id", ondelete="SET NULL")
-    )
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
+    topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id", ondelete="SET NULL"))
 
     group: Mapped[Group] = relationship(back_populates="group_topics")
     topic: Mapped[Topic | None] = relationship(back_populates="group_topics")
@@ -252,156 +196,80 @@ class Teacher(Base):
     __tablename__ = "teachers"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    university_id: Mapped[int | None] = mapped_column(
-        ForeignKey("universities.id", ondelete="SET NULL")
-    )
-    department_id: Mapped[int | None] = mapped_column(
-        ForeignKey("departments.id", ondelete="SET NULL")
-    )
-    person_id: Mapped[int | None] = mapped_column(
-        ForeignKey("people.id", ondelete="SET NULL")
-    )
+    university_id: Mapped[int | None] = mapped_column(ForeignKey("universities.id", ondelete="SET NULL"))
+    department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id", ondelete="SET NULL"))
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
 
-    university: Mapped[University | None] = relationship(
-        back_populates="teachers"
-    )
-    department: Mapped[Department | None] = relationship(
-        back_populates="teachers"
-    )
+    university: Mapped[University | None] = relationship(back_populates="teachers")
+    department: Mapped[Department | None] = relationship(back_populates="teachers")
     person: Mapped[Person | None] = relationship(back_populates="teachers")
-    participants: Mapped[list[Participant]] = relationship(
-        back_populates="teacher"
-    )
+    participants: Mapped[list[Participant]] = relationship(back_populates="teacher")
 
 
 class Participant(Base):
     __tablename__ = "participants"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    person_id: Mapped[int | None] = mapped_column(
-        ForeignKey("people.id", ondelete="SET NULL")
-    )
-    faculty_id: Mapped[int | None] = mapped_column(
-        ForeignKey("faculties.id", ondelete="SET NULL")
-    )
-    course_id: Mapped[int | None] = mapped_column(
-        ForeignKey("courses.id", ondelete="SET NULL")
-    )
-    teacher_id: Mapped[int | None] = mapped_column(
-        ForeignKey("teachers.id", ondelete="SET NULL")
-    )
-    section_id: Mapped[int | None] = mapped_column(
-        ForeignKey("sections.id", ondelete="SET NULL")
-    )
-    is_poster_participant: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="false"
-    )
-    is_translator_participant: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="false"
-    )
-    has_translator_education: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="false"
-    )
-    textbook_level_id: Mapped[int | None] = mapped_column(
-        ForeignKey("textbook_levels.id", ondelete="SET NULL")
-    )
-    is_group_leader: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="false"
-    )
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
+    faculty_id: Mapped[int | None] = mapped_column(ForeignKey("faculties.id", ondelete="SET NULL"))
+    course_id: Mapped[int | None] = mapped_column(ForeignKey("courses.id", ondelete="SET NULL"))
+    teacher_id: Mapped[int | None] = mapped_column(ForeignKey("teachers.id", ondelete="SET NULL"))
+    section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
+    is_poster_participant: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    is_translator_participant: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    has_translator_education: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    textbook_level_id: Mapped[int | None] = mapped_column(ForeignKey("textbook_levels.id", ondelete="SET NULL"))
+    is_group_leader: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     presentation_topic: Mapped[str | None] = mapped_column(String(255))
-    is_notification_allowed: Mapped[bool] = mapped_column(
-        Boolean, default=True, server_default="true"
-    )
+    is_notification_allowed: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     password_hash: Mapped[str | None] = mapped_column(String(255))
 
     person: Mapped[Person | None] = relationship(back_populates="participants")
-    faculty: Mapped[Faculty | None] = relationship(
-        back_populates="participants"
-    )
+    faculty: Mapped[Faculty | None] = relationship(back_populates="participants")
     course: Mapped[Course | None] = relationship(back_populates="participants")
-    teacher: Mapped[Teacher | None] = relationship(
-        back_populates="participants"
-    )
-    section: Mapped[Section | None] = relationship(
-        back_populates="participants"
-    )
-    textbook_level: Mapped[TextbookLevel | None] = relationship(
-        back_populates="participants"
-    )
-    group_participants: Mapped[list[GroupParticipant]] = relationship(
-        back_populates="participant"
-    )
-    jury_scores: Mapped[list[JuryScore]] = relationship(
-        back_populates="participant"
-    )
-    organizer_changes: Mapped[list[OrganizerParticipantChange]] = relationship(
-        back_populates="participant"
-    )
+    teacher: Mapped[Teacher | None] = relationship(back_populates="participants")
+    section: Mapped[Section | None] = relationship(back_populates="participants")
+    textbook_level: Mapped[TextbookLevel | None] = relationship(back_populates="participants")
+    group_participants: Mapped[list[GroupParticipant]] = relationship(back_populates="participant")
+    jury_scores: Mapped[list[JuryScore]] = relationship(back_populates="participant")
+    organizer_changes: Mapped[list[OrganizerParticipantChange]] = relationship(back_populates="participant")
 
 
 class GroupParticipant(Base):
     __tablename__ = "group_participants"
-    __table_args__ = (
-        UniqueConstraint(
-            "group_id", "participant_id", name="uq_group_participant"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("group_id", "participant_id", name="uq_group_participant"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    group_id: Mapped[int] = mapped_column(
-        ForeignKey("groups.id", ondelete="CASCADE")
-    )
-    participant_id: Mapped[int] = mapped_column(
-        ForeignKey("participants.id", ondelete="CASCADE")
-    )
+    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id", ondelete="CASCADE"))
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete="CASCADE"))
 
     group: Mapped[Group] = relationship(back_populates="group_participants")
-    participant: Mapped[Participant] = relationship(
-        back_populates="group_participants"
-    )
+    participant: Mapped[Participant] = relationship(back_populates="group_participants")
 
 
 class Jury(Base):
     __tablename__ = "juries"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    university_id: Mapped[int | None] = mapped_column(
-        ForeignKey("universities.id", ondelete="SET NULL")
-    )
-    person_id: Mapped[int | None] = mapped_column(
-        ForeignKey("people.id", ondelete="SET NULL")
-    )
-    is_chairman: Mapped[bool] = mapped_column(
-        Boolean, default=False, server_default="false"
-    )
+    university_id: Mapped[int | None] = mapped_column(ForeignKey("universities.id", ondelete="SET NULL"))
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
+    is_chairman: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     access_key: Mapped[int | None] = mapped_column(BigInteger)
 
-    university: Mapped[University | None] = relationship(
-        back_populates="juries"
-    )
+    university: Mapped[University | None] = relationship(back_populates="juries")
     person: Mapped[Person | None] = relationship(back_populates="juries")
-    section_juries: Mapped[list[SectionJury]] = relationship(
-        back_populates="jury"
-    )
+    section_juries: Mapped[list[SectionJury]] = relationship(back_populates="jury")
     jury_scores: Mapped[list[JuryScore]] = relationship(back_populates="jury")
-    jury_score_changes: Mapped[list[JuryScoreChange]] = relationship(
-        back_populates="jury"
-    )
+    jury_score_changes: Mapped[list[JuryScoreChange]] = relationship(back_populates="jury")
 
 
 class SectionJury(Base):
     __tablename__ = "section_juries"
-    __table_args__ = (
-        UniqueConstraint("section_id", "jury_id", name="uq_section_jury"),
-    )
+    __table_args__ = (UniqueConstraint("section_id", "jury_id", name="uq_section_jury"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id", ondelete="CASCADE")
-    )
-    jury_id: Mapped[int] = mapped_column(
-        ForeignKey("juries.id", ondelete="CASCADE")
-    )
+    section_id: Mapped[int] = mapped_column(ForeignKey("sections.id", ondelete="CASCADE"))
+    jury_id: Mapped[int] = mapped_column(ForeignKey("juries.id", ondelete="CASCADE"))
 
     section: Mapped[Section] = relationship(back_populates="section_juries")
     jury: Mapped[Jury] = relationship(back_populates="section_juries")
@@ -411,12 +279,8 @@ class JuryScore(Base):
     __tablename__ = "jury_scores"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    jury_id: Mapped[int | None] = mapped_column(
-        ForeignKey("juries.id", ondelete="SET NULL")
-    )
-    participant_id: Mapped[int | None] = mapped_column(
-        ForeignKey("participants.id", ondelete="SET NULL")
-    )
+    jury_id: Mapped[int | None] = mapped_column(ForeignKey("juries.id", ondelete="SET NULL"))
+    participant_id: Mapped[int | None] = mapped_column(ForeignKey("participants.id", ondelete="SET NULL"))
     organization_score: Mapped[float | None] = mapped_column(Float)
     content: Mapped[float | None] = mapped_column(Float)
     visuals: Mapped[float | None] = mapped_column(Float)
@@ -425,92 +289,56 @@ class JuryScore(Base):
     comment: Mapped[str | None] = mapped_column(String(100))
 
     jury: Mapped[Jury | None] = relationship(back_populates="jury_scores")
-    participant: Mapped[Participant | None] = relationship(
-        back_populates="jury_scores"
-    )
-    changes: Mapped[list[JuryScoreChange]] = relationship(
-        back_populates="jury_score"
-    )
+    participant: Mapped[Participant | None] = relationship(back_populates="jury_scores")
+    changes: Mapped[list[JuryScoreChange]] = relationship(back_populates="jury_score")
 
 
 class JuryScoreChange(Base):
     __tablename__ = "jury_scores_changes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    jury_scores_id: Mapped[int] = mapped_column(
-        ForeignKey("jury_scores.id", ondelete="CASCADE")
-    )
-    jury_id: Mapped[int | None] = mapped_column(
-        ForeignKey("juries.id", ondelete="SET NULL")
-    )
-    update_time: Mapped[DateTime | None] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    jury_scores_id: Mapped[int] = mapped_column(ForeignKey("jury_scores.id", ondelete="CASCADE"))
+    jury_id: Mapped[int | None] = mapped_column(ForeignKey("juries.id", ondelete="SET NULL"))
+    update_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     jury_score: Mapped[JuryScore] = relationship(back_populates="changes")
-    jury: Mapped[Jury | None] = relationship(
-        back_populates="jury_score_changes"
-    )
+    jury: Mapped[Jury | None] = relationship(back_populates="jury_score_changes")
 
 
 class OrganizerSectionChange(Base):
     __tablename__ = "organizer_section_changes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("sections.id", ondelete="CASCADE")
-    )
-    organizer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("organizers.id", ondelete="SET NULL")
-    )
-    update_time: Mapped[DateTime | None] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    section_id: Mapped[int] = mapped_column(ForeignKey("sections.id", ondelete="CASCADE"))
+    organizer_id: Mapped[int | None] = mapped_column(ForeignKey("organizers.id", ondelete="SET NULL"))
+    update_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     section: Mapped[Section] = relationship(back_populates="organizer_changes")
-    organizer: Mapped[Organizer | None] = relationship(
-        back_populates="section_changes"
-    )
+    organizer: Mapped[Organizer | None] = relationship(back_populates="section_changes")
 
 
 class OrganizerParticipantChange(Base):
     __tablename__ = "organizer_participant_changes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    participant_id: Mapped[int] = mapped_column(
-        ForeignKey("participants.id", ondelete="CASCADE")
-    )
-    organizer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("organizers.id", ondelete="SET NULL")
-    )
-    update_time: Mapped[DateTime | None] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id", ondelete="CASCADE"))
+    organizer_id: Mapped[int | None] = mapped_column(ForeignKey("organizers.id", ondelete="SET NULL"))
+    update_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    participant: Mapped[Participant] = relationship(
-        back_populates="organizer_changes"
-    )
-    organizer: Mapped[Organizer | None] = relationship(
-        back_populates="participant_changes"
-    )
+    participant: Mapped[Participant] = relationship(back_populates="organizer_changes")
+    organizer: Mapped[Organizer | None] = relationship(back_populates="participant_changes")
 
 
 class TechnicalRequirement(Base):
     __tablename__ = "technical_requirements"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    topic_id: Mapped[int | None] = mapped_column(
-        ForeignKey("topics.id", ondelete="SET NULL")
-    )
+    topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id", ondelete="SET NULL"))
     format: Mapped[str | None] = mapped_column(String(10))
     sizes: Mapped[str | None] = mapped_column(String(2))
 
-    topic: Mapped[Topic | None] = relationship(
-        back_populates="technical_requirements"
-    )
-    posters_content: Mapped[list[PosterContent]] = relationship(
-        back_populates="technical_requirement"
-    )
+    topic: Mapped[Topic | None] = relationship(back_populates="technical_requirements")
+    posters_content: Mapped[list[PosterContent]] = relationship(back_populates="technical_requirement")
 
 
 class PosterContent(Base):
@@ -523,9 +351,7 @@ class PosterContent(Base):
     words_amount: Mapped[int | None] = mapped_column(Integer)
     images_amount: Mapped[int | None] = mapped_column(Integer)
 
-    technical_requirement: Mapped[TechnicalRequirement | None] = relationship(
-        back_populates="posters_content"
-    )
+    technical_requirement: Mapped[TechnicalRequirement | None] = relationship(back_populates="posters_content")
 
 
 __all__ = [

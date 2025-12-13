@@ -11,15 +11,11 @@ from app.core.config import settings
 
 
 def get_engine() -> AsyncEngine:
-    return create_async_engine(
-        settings.database_url, echo=settings.db_echo, future=True
-    )
+    return create_async_engine(settings.database_url, echo=settings.db_echo, future=True)
 
 
 engine = get_engine()
-AsyncSessionMaker = async_sessionmaker(
-    engine, expire_on_commit=False, class_=AsyncSession
-)
+AsyncSessionMaker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:

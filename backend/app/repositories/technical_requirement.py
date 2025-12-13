@@ -35,22 +35,16 @@ class TechnicalRequirementRepository:
         Returns:
             TechnicalRequirement instance or None if not found
         """
-        stmt = select(TechnicalRequirement).where(
-            TechnicalRequirement.id == requirement_id
-        )
+        stmt = select(TechnicalRequirement).where(TechnicalRequirement.id == requirement_id)
 
         if with_content:
             # Eager loading using selectinload to avoid N+1 queries
-            stmt = stmt.options(
-                selectinload(TechnicalRequirement.posters_content)
-            )
+            stmt = stmt.options(selectinload(TechnicalRequirement.posters_content))
 
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_technical_requirement(
-        self, data: TechnicalRequirementCreate
-    ) -> TechnicalRequirement:
+    async def create_technical_requirement(self, data: TechnicalRequirementCreate) -> TechnicalRequirement:
         """Create a new technical requirement."""
         requirement = TechnicalRequirement(
             topic_id=data.topic_id,
@@ -85,9 +79,7 @@ class TechnicalRequirementRepository:
         await self._session.refresh(requirement)
         return requirement
 
-    async def delete_technical_requirement(
-        self, requirement: TechnicalRequirement
-    ) -> None:
+    async def delete_technical_requirement(self, requirement: TechnicalRequirement) -> None:
         """Delete a technical requirement."""
         await self._session.delete(requirement)
         await self._session.flush()

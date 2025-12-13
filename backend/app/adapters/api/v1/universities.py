@@ -14,15 +14,10 @@ async def list_universities(
     service: Annotated[UniversityService, Depends(get_university_service)],
 ) -> list[UniversityRead]:
     universities = await service.list_universities()
-    return [
-        UniversityRead.model_validate(university)
-        for university in universities
-    ]
+    return [UniversityRead.model_validate(university) for university in universities]
 
 
-@router.post(
-    "/", response_model=UniversityRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=UniversityRead, status_code=status.HTTP_201_CREATED)
 async def create_university(
     payload: UniversityCreate,
     service: Annotated[UniversityService, Depends(get_university_service)],

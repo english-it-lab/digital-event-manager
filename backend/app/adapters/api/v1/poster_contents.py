@@ -15,9 +15,7 @@ router = APIRouter(tags=["poster-contents"])
 
 @router.get("/", response_model=list[PosterContentRead])
 async def list_poster_contents(
-    service: Annotated[
-        PosterContentService, Depends(get_poster_content_service)
-    ],
+    service: Annotated[PosterContentService, Depends(get_poster_content_service)],
 ) -> list[PosterContentRead]:
     """Retrieve all poster contents."""
     contents = await service.list_poster_contents()
@@ -27,9 +25,7 @@ async def list_poster_contents(
 @router.get("/{content_id}", response_model=PosterContentRead)
 async def get_poster_content(
     content_id: int,
-    service: Annotated[
-        PosterContentService, Depends(get_poster_content_service)
-    ],
+    service: Annotated[PosterContentService, Depends(get_poster_content_service)],
 ) -> PosterContentRead:
     """
     Retrieve poster content by ID.
@@ -52,14 +48,10 @@ async def get_poster_content(
     return PosterContentRead.model_validate(content)
 
 
-@router.post(
-    "/", response_model=PosterContentRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=PosterContentRead, status_code=status.HTTP_201_CREATED)
 async def create_poster_content(
     payload: PosterContentCreate,
-    service: Annotated[
-        PosterContentService, Depends(get_poster_content_service)
-    ],
+    service: Annotated[PosterContentService, Depends(get_poster_content_service)],
 ) -> PosterContentRead:
     """
     Create new poster content.
@@ -78,9 +70,7 @@ async def create_poster_content(
 async def update_poster_content(
     content_id: int,
     payload: PosterContentUpdate,
-    service: Annotated[
-        PosterContentService, Depends(get_poster_content_service)
-    ],
+    service: Annotated[PosterContentService, Depends(get_poster_content_service)],
 ) -> PosterContentRead:
     """
     Update existing poster content.
@@ -107,9 +97,7 @@ async def update_poster_content(
 @router.delete("/{content_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_poster_content(
     content_id: int,
-    service: Annotated[
-        PosterContentService, Depends(get_poster_content_service)
-    ],
+    service: Annotated[PosterContentService, Depends(get_poster_content_service)],
 ) -> None:
     """
     Delete poster content.

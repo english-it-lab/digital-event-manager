@@ -8,3 +8,6 @@ source/bot/database/instance/*.db
 
 .idea/
 .idea
+
+openapi_server/
+openapi_server

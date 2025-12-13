@@ -16,28 +16,18 @@ router = APIRouter(tags=["technical-requirements"])
 
 @router.get("/", response_model=list[TechnicalRequirementRead])
 async def list_technical_requirements(
-    service: Annotated[
-        TechnicalRequirementService, Depends(get_technical_requirement_service)
-    ],
+    service: Annotated[TechnicalRequirementService, Depends(get_technical_requirement_service)],
 ) -> list[TechnicalRequirementRead]:
     """Retrieve all technical requirements."""
     requirements = await service.list_technical_requirements()
-    return [
-        TechnicalRequirementRead.model_validate(req) for req in requirements
-    ]
+    return [TechnicalRequirementRead.model_validate(req) for req in requirements]
 
 
-@router.get(
-    "/{requirement_id}", response_model=TechnicalRequirementReadWithContent
-)
+@router.get("/{requirement_id}", response_model=TechnicalRequirementReadWithContent)
 async def get_technical_requirement(
     requirement_id: int,
-    service: Annotated[
-        TechnicalRequirementService, Depends(get_technical_requirement_service)
-    ],
-    include_content: bool = Query(
-        default=True, description="Include related poster content"
-    ),
+    service: Annotated[TechnicalRequirementService, Depends(get_technical_requirement_service)],
+    include_content: bool = Query(default=True, description="Include related poster content"),
 ) -> TechnicalRequirementReadWithContent:
     """
     Retrieve a technical requirement by ID.
@@ -52,9 +42,7 @@ async def get_technical_requirement(
     Raises:
         HTTPException: 404 if technical requirement not found
     """  # noqa: E501
-    requirement = await service.get_technical_requirement_by_id(
-        requirement_id, with_content=include_content
-    )
+    requirement = await service.get_technical_requirement_by_id(requirement_id, with_content=include_content)
     if requirement is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -70,9 +58,7 @@ async def get_technical_requirement(
 )
 async def create_technical_requirement(
     payload: TechnicalRequirementCreate,
-    service: Annotated[
-        TechnicalRequirementService, Depends(get_technical_requirement_service)
-    ],
+    service: Annotated[TechnicalRequirementService, Depends(get_technical_requirement_service)],
 ) -> TechnicalRequirementRead:
     """
     Create a new technical requirement.
@@ -91,9 +77,7 @@ async def create_technical_requirement(
 async def update_technical_requirement(
     requirement_id: int,
     payload: TechnicalRequirementUpdate,
-    service: Annotated[
-        TechnicalRequirementService, Depends(get_technical_requirement_service)
-    ],
+    service: Annotated[TechnicalRequirementService, Depends(get_technical_requirement_service)],
 ) -> TechnicalRequirementRead:
     """
     Update an existing technical requirement.
@@ -108,9 +92,7 @@ async def update_technical_requirement(
     Raises:
         HTTPException: 404 if technical requirement not found
     """
-    requirement = await service.update_technical_requirement(
-        requirement_id, payload
-    )
+    requirement = await service.update_technical_requirement(requirement_id, payload)
     if requirement is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -122,9 +104,7 @@ async def update_technical_requirement(
 @router.delete("/{requirement_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_technical_requirement(
     requirement_id: int,
-    service: Annotated[
-        TechnicalRequirementService, Depends(get_technical_requirement_service)
-    ],
+    service: Annotated[TechnicalRequirementService, Depends(get_technical_requirement_service)],
 ) -> None:
     """
     Delete a technical requirement.
