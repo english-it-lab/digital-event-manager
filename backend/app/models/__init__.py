@@ -277,6 +277,7 @@ class SectionJury(Base):
 
 class JuryScore(Base):
     __tablename__ = "jury_scores"
+    __table_args__ = (UniqueConstraint("jury_id", "participant_id", name="uq_jury_participant_score"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     jury_id: Mapped[int | None] = mapped_column(ForeignKey("juries.id", ondelete="SET NULL"))

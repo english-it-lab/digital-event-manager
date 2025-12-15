@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.adapters.api.v1 import (
+    participant_scores,
     poster_contents,
     technical_requirements,
     universities,
@@ -16,6 +17,7 @@ router = APIRouter()
 router.include_router(universities.router, prefix="/universities")
 router.include_router(technical_requirements.router, prefix="/technical-requirements")
 router.include_router(poster_contents.router, prefix="/poster-contents")
+router.include_router(participant_scores.router, prefix="/participants/{participant_id}/scores")
 router.include_router(draw_router)
 router.include_router(draw_results_router)
 router.include_router(topics_router)

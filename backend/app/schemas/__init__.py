@@ -296,11 +296,60 @@ class JuryScoreBase(BaseModel):
 
 
 class JuryScoreCreate(JuryScoreBase):
-    pass
+    @field_validator("organization_score", "content", "visuals", "mechanics", "delivery")
+    @classmethod
+    def validate_score_range(cls, v: float | None) -> float | None:
+        """Validate that scores are between 0.0 and 10.0."""
+        if v is not None and (v < 0.0 or v > 10.0):
+            raise ValueError("Score must be between 0.0 and 10.0")
+        return v
 
 
 class JuryScoreRead(ORMModelMixin, JuryScoreBase):
     id: int
+
+
+class JuryScoreUpdate(BaseModel):
+    organization_score: float | None = None
+    content: float | None = None
+    visuals: float | None = None
+    mechanics: float | None = None
+    delivery: float | None = None
+    comment: str | None = None
+
+    @field_validator("organization_score", "content", "visuals", "mechanics", "delivery")
+    @classmethod
+    def validate_score_range(cls, v: float | None) -> float | None:
+        """Validate that scores are between 0.0 and 10.0."""
+        if v is not None and (v < 0.0 or v > 10.0):
+            raise ValueError("Score must be between 0.0 and 10.0")
+        return v
+
+
+class ParticipantScoreSummary(BaseModel):
+    """Summary of all scores for a participant with calculated average."""
+
+    participant_id: int
+    scores: list[JuryScoreRead]
+    average_score: float | None  # None if no scores exist
+
+    @staticmethod
+    def calculate_average(scores: list[JuryScoreRead]) -> float | None:
+        """Calculate average of all 5 criteria across all jury scores."""
+        if not scores:
+            return None
+
+        total_sum = 0.0
+        count = 0
+
+        for score in scores:
+            for field in ["organization_score", "content", "visuals", "mechanics", "delivery"]:
+                value = getattr(score, field)
+                if value is not None:
+                    total_sum += value
+                    count += 1
+
+        return round(total_sum / count, 2) if count > 0 else None
 
 
 class JuryScoreChangeBase(BaseModel):
@@ -466,6 +515,8 @@ __all__ = [
     "JuryScoreBase",
     "JuryScoreCreate",
     "JuryScoreRead",
+    "JuryScoreUpdate",
+    "ParticipantScoreSummary",
     "JuryScoreChangeBase",
     "JuryScoreChangeCreate",
     "JuryScoreChangeRead",

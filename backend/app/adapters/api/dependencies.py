@@ -5,12 +5,17 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
+from app.repositories.jury import JuryRepository
+from app.repositories.jury_score import JuryScoreRepository
+from app.repositories.participant import ParticipantRepository
 from app.repositories.poster_content import PosterContentRepository
+from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
     TechnicalRequirementRepository,
 )
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.services.jury_score import JuryScoreService
 from app.services.poster_content import PosterContentService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.university import UniversityService
@@ -42,3 +47,20 @@ def get_poster_content_service(
     repository = PosterContentRepository(session)
     tech_req_repository = TechnicalRequirementRepository(session)
     return PosterContentService(repository, tech_req_repository)
+
+
+def get_jury_score_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> JuryScoreService:
+    """Dependency injection for JuryScoreService."""
+    jury_score_repo = JuryScoreRepository(session)
+    participant_repo = ParticipantRepository(session)
+    jury_repo = JuryRepository(session)
+    section_jury_repo = SectionJuryRepository(session)
+
+    return JuryScoreService(
+        jury_score_repository=jury_score_repo,
+        participant_repository=participant_repo,
+        jury_repository=jury_repo,
+        section_jury_repository=section_jury_repo,
+    )
