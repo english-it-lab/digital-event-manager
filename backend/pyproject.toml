@@ -11,7 +11,8 @@ dependencies = [
     "pydantic-settings",
     "python-dotenv",
     "sqlalchemy",
-    "uvicorn[standard]",
+    "uvicorn[standard]",    
+    "reportlab"
 ]
 
 [tool.ruff]
