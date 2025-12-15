@@ -5,11 +5,14 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
+from app.repositories.event import EventRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
+from app.repositories.organizer import OrganizerRepository
 from app.repositories.participant import ParticipantRepository
 from app.repositories.person import PersonRepository
 from app.repositories.poster_content import PosterContentRepository
+from app.repositories.section import SectionRepository
 from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
     TechnicalRequirementRepository,
@@ -19,6 +22,7 @@ from app.repositories.university import UniversityRepository
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.poster_content import PosterContentService
+from app.services.section import SectionService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.university import UniversityService
 
@@ -79,3 +83,12 @@ def get_jury_score_service(
         jury_repository=jury_repo,
         section_jury_repository=section_jury_repo,
     )
+
+
+def get_section_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionService:
+    repository = SectionRepository(session)
+    organizer_repository = OrganizerRepository(session)
+    event_repository = EventRepository(session)
+    return SectionService(repository, organizer_repository, event_repository)

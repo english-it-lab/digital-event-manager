@@ -144,7 +144,11 @@ class SectionBase(BaseModel):
 
 
 class SectionCreate(SectionBase):
-    pass
+    event_id: int | None = Field(None)
+
+
+class SectionUpdate(SectionBase):
+    organizer_id: int | None = Field(None)
 
 
 class SectionRead(ORMModelMixin, SectionBase):
@@ -491,6 +495,7 @@ __all__ = [
     "TextbookLevelRead",
     "SectionBase",
     "SectionCreate",
+    "SectionUpdate",
     "SectionRead",
     "EventSectionBase",
     "EventSectionCreate",
