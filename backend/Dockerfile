@@ -13,7 +13,9 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 RUN apt-get update && \
-    apt-get install -y openjdk-21-jdk && \
+    apt-get install -y \
+    openjdk-21-jdk \
+    build-essential && \
     rm -rf /var/lib/apt/lists/*
 
 COPY generate_api.sh /generate_api.sh
