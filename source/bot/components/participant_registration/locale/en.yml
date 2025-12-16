@@ -5,6 +5,8 @@ en:
             right: ➡️
             back: ⬅️ Back
             exit: ⬅️ Return to menu
+            yes: Yes
+            no: No
         user:
             main:
                 caption: |
@@ -73,12 +75,13 @@ en:
                     button: Participant
                     form:
                         section: Select the section you want to attend
-                        theme: Select the conference topic
+                        theme: Enter the conference topic
                         faculty: Select your faculty
                         course: Select your course
                         advisor: Select your English teacher
                         english_level: Select your English level
                         is_translator: Are you a translator?
+                        has_translator_education: Do you have translator education?
                         success:
                             caption: |
                                 You have successfully registered!

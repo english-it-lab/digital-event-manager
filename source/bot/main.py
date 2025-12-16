@@ -38,6 +38,8 @@ async def main() -> None:
     db_path = join(dirname(__file__), "digital_event_manager.db")
     db = Database(db_path).connect()
 
+    
+
     bot = Bot(
         token=os.getenv("TG_BOT_TOKEN"),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),

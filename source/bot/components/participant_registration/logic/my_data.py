@@ -164,7 +164,7 @@ async def pr_cb_handle_email_input(message: types.Message, state: FSMContext):
 async def pr_cb_handle_verification_code(message: types.Message, state: FSMContext):
     data = await state.get_data()
     lang = data.get("lang", "ru")
-    email = data.get("email", SMTP_USERNAME)
+    email = data.get("email", os.getenv("SMTP_USERNAME"))
     user_code = message.text.strip()
     user_id = message.from_user.id
 
@@ -199,14 +199,14 @@ async def send_verification_email(email: str, code: str, lang: str):
         f"{getstr(lang, prefix, 'email_confirm.email_text_caption_part2')}"
     )
     msg["Subject"] = getstr(lang, prefix, "email_confirm.email_subject_caption")
-    msg["From"] = EMAIL_FROM
+    msg["From"] = os.getenv("TG_BOT_EMAIL")
     msg["To"] = email
 
     try:
         with smtplib.SMTP_SSL(
             os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))
         ) as server:
-            server.login(os.getenv("SMTP_USERNAME"), os.getenv("SMTP_PASSWORD"))
+            server.login(os.getenv("SMTP_USERNAME"), os.getenv("TG_BOT_EMAIL_PASSWORD"))
             server.send_message(msg)
         return True
     except Exception as e:
