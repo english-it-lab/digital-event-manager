@@ -12,7 +12,8 @@ from database.db import (
     get_courses,
     add_participant_to_db,
     get_teachers_with_people_data,
-    get_textbook_levels
+    get_textbook_levels,
+    get_user_by_tg_name
 )
 
 locale = load_locales(join(dirname(__file__), "..", "locale"))
@@ -222,22 +223,6 @@ async def pr_cb_reg_prt_frm_course(
         getstr(lang, prefix_prt, "form.course"), reply_markup=keyboard.as_markup()
     )
 
-async def pr_cb_reg_prt_frm_add_to_db(
-    callback_query: types.CallbackQuery, bot: Bot, state: FSMContext
-) -> None:
-    keyboard = InlineKeyboardBuilder()
-
-    success = add_participant_to_db(person_id=1, faculty_id=1, course_id=1,
-                                    section_id=1, is_poster_participant=False,
-                                    teacher_id=1,
-                                    is_translators_participate=False,
-                                    has_translator_education=False,
-                                    textbook_level_id=1,
-                                    is_group_leader=False,
-                                    presentation_topic="Listen",
-                                    is_notification_allowed=False,
-                                    password="12345")
-
 async def pr_cb_reg_prt_frm_advisor(
     callback_query: types.CallbackQuery, bot: Bot, state: FSMContext
 ) -> None:
@@ -332,8 +317,9 @@ async def pr_cb_handle_theme_input(message: types.Message, state: FSMContext):
 
     data = await state.get_data()
     lang = data.get("lang", "ru")
+    tg_name = message.from_user.username or f"id{message.from_user.id}"
 
-    success = add_participant_to_db(person_id=1,
+    success = add_participant_to_db(person_id=get_user_by_tg_name(tg_name=tg_name)["id"],
                                     faculty_id=data.get("faculty_id"), 
                                     course_id=data.get("course_id"),
                                     section_id=data.get("section_id"),
@@ -348,6 +334,17 @@ async def pr_cb_handle_theme_input(message: types.Message, state: FSMContext):
                                     password="12345")
     print("---------------------------------------- success", success)
     await state.clear()
+
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.button(text=getstr(lang, shared, "exit"), callback_data="pr_cb_main")
+    keyboard.adjust(1)
+
+    if success:
+        await message.answer(
+                f"{getstr(lang, prefix_prt, 'form.success.caption')}",
+                reply_markup=keyboard.as_markup()
+            )
 
 
 async def pr_cb_reg_prt_frm_on_success(

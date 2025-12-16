@@ -17,7 +17,6 @@ from components.participant_registration.logic.register import (
     pr_cb_reg_prt_frm_theme,
     pr_cb_reg_prt_frm_faculty,
     pr_cb_reg_prt_frm_course,
-    pr_cb_reg_prt_frm_add_to_db,
     pr_cb_reg_prt_frm_advisor,
     pr_cb_reg_prt_frm_english_level,
     pr_cb_reg_prt_frm_translator,
@@ -173,12 +172,6 @@ async def callback_reg_participant_course(
     await state.update_data({callback_query.data.split()[1]: callback_query.data.split()[2]})
     print("--------------------------------------- ", callback_query.data.split()[1], callback_query.data.split()[2])
     await pr_cb_reg_prt_frm_course(callback_query, bot, state)
-
-@router.callback_query(lambda c: c.data.split()[0] == "pr_cb_reg_prt_frm_add_to_db")
-async def callback_reg_participant_add_to_db(
-    callback_query: types.CallbackQuery, bot: Bot, state: FSMContext
-) -> None:
-    await pr_cb_reg_prt_frm_add_to_db(callback_query, bot, state)
 
 @router.callback_query(lambda c: c.data.split()[0] == "pr_cb_reg_prt_frm_advisor")
 async def callback_reg_participant_advisor(
