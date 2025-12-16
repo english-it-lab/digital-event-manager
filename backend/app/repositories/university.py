@@ -18,6 +18,11 @@ class UniversityRepository:
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
+    async def get_university_by_id(self, university_id: int) -> University | None:
+        stmt = select(University).where(University.id == university_id)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create_university(self, data: UniversityCreate) -> University:
         university = University(name=data.name)
         self._session.add(university)

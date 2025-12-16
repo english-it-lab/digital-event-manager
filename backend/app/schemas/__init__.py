@@ -271,6 +271,13 @@ class JuryRead(ORMModelMixin, JuryBase):
     id: int
 
 
+class JuryUpdate(BaseModel):
+    university_id: int | None = None
+    person_id: int | None = None
+    is_chairman: bool | None = None
+    access_key: int | None = None
+
+
 class SectionJuryBase(BaseModel):
     section_id: int
     jury_id: int
