@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Цифровой Управляющий Мероприятиями - Notifications API
-  description: API для отправки уведомлений участникам и организаторам мероприятий
+  title: Цифровой Управляющий Мероприятиями - Draw Notifications API
+  description: API для отправки уведомлений о результатах жеребьевки
   version: 1.0.0
 
 servers:
@@ -9,80 +9,14 @@ servers:
     description: Server
 
 tags:
-  - name: Notifications
-    description: Отправка уведомлений
+  - name: Draw
+    description: Уведомления о жеребьевке
 
 paths:
-  /notifications/registration/individual:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить уведомление об индивидуальной регистрации участнику
-      description: |
-        Отправляет уведомление участнику на email и в Telegram после регистрации.
-        Также отправляет данные организаторам на email в формате таблицы.
-        Тема письма организаторам: "[Название мероприятия] [Год] [Фамилия студента, инициалы] [Аббревиатура факультета]"
-      operationId: sendIndividualRegistrationNotification
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IndividualRegistrationNotificationRequest'
-      responses:
-        '200':
-          description: Уведомления успешно отправлены
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Ошибка при отправке
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /notifications/registration/group:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить уведомления о групповой регистрации
-      description: |
-        Отправляет уведомления всем участникам группы на email и в Telegram.
-        Также отправляет данные организаторам на email в формате таблицы.
-        Тема письма организаторам: "[Название мероприятия] [Год] [Название группы] [Количество участников]"
-      operationId: sendGroupRegistrationNotification
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GroupRegistrationNotificationRequest'
-      responses:
-        '200':
-          description: Уведомления успешно отправлены
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /notifications/draw/results:
     post:
       tags:
-        - Notifications
+        - Draw
       summary: Отправить результаты жеребьевки группе
       description: |
         Отправляет уведомление на email всех участников группы и руководителю с назначенной темой
@@ -108,119 +42,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /notifications/jury/final-results:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить финальные результаты оценки организаторам
-      description: |
-        Отправляет письмо организаторам после фиксации результатов председателем жюри.
-        Письмо содержит итоговую таблицу с распределением мест, где первые три места
-        выделены жирным шрифтом.
-      operationId: sendJuryFinalResults
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/JuryFinalResultsNotificationRequest'
-      responses:
-        '200':
-          description: Результаты успешно отправлены организаторам
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /notifications/program:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить сформированную программу мероприятия
-      description: |
-        Отправляет сформированные документы программы мероприятия (DOC и PDF)
-        на указанную почту организатора.
-      operationId: sendEventProgram
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProgramNotificationRequest'
-      responses:
-        '200':
-          description: Программа успешно отправлена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /notifications/custom:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить произвольное сообщение участникам (для организаторов)
-      description: |
-        Позволяет организатору отправить произвольное сообщение участникам
-        через Telegram и/или email.
-      operationId: sendCustomNotification
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomNotificationRequest'
-      responses:
-        '200':
-          description: Сообщение успешно отправлено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /notifications/status:
-    post:
-      tags:
-        - Notifications
-      summary: Отправить уведомление о статусе регистрации
-      description: |
-        Отправляет участнику уведомление о статусе его регистрации
-        и информацию о предстоящих мероприятиях.
-      operationId: sendRegistrationStatusNotification
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegistrationStatusNotificationRequest'
-      responses:
-        '200':
-          description: Уведомление отправлено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
+        '500':
+          description: Ошибка при отправке
           content:
             application/json:
               schema:
@@ -228,63 +51,6 @@ paths:
 
 components:
   schemas:
-    IndividualRegistrationNotificationRequest:
-      type: object
-      required:
-        - eventName
-        - eventYear
-        - participant
-        - organizerEmails
-      properties:
-        eventName:
-          type: string
-          description: Название мероприятия
-          example: "Научная конференция"
-        eventYear:
-          type: integer
-          description: Год проведения
-          example: 2024
-        participant:
-          $ref: '#/components/schemas/ParticipantInfo'
-        organizerEmails:
-          type: array
-          items:
-            type: string
-            format: email
-          description: Email адреса организаторов для отправки данных
-          example: ["organizer@example.com"]
-
-    GroupRegistrationNotificationRequest:
-      type: object
-      required:
-        - eventName
-        - eventYear
-        - groupName
-        - participants
-        - organizerEmails
-      properties:
-        eventName:
-          type: string
-          description: Название мероприятия
-        eventYear:
-          type: integer
-          description: Год проведения
-        groupName:
-          type: string
-          description: Название группы
-          example: "Группа А"
-        participants:
-          type: array
-          description: Список участников группы
-          items:
-            $ref: '#/components/schemas/GroupParticipantInfo'
-        organizerEmails:
-          type: array
-          items:
-            type: string
-            format: email
-          description: Email адреса организаторов
-
     DrawResultsNotificationRequest:
       type: object
       required:
@@ -302,9 +68,11 @@ components:
         eventYear:
           type: integer
           description: Год проведения
+          example: 2024
         groupName:
           type: string
           description: Название группы
+          example: "Группа А"
         assignedTopic:
           type: string
           description: Назначенная тема
@@ -319,313 +87,12 @@ components:
             type: string
             format: email
           description: Email всех участников группы
+          example: ["student1@example.com", "student2@example.com"]
         supervisorEmail:
           type: string
           format: email
           description: Email руководителя группы
-
-    JuryFinalResultsNotificationRequest:
-      type: object
-      required:
-        - eventInfo
-        - sectionName
-        - juryChairman
-        - juryMembers
-        - results
-        - organizerEmails
-      properties:
-        eventInfo:
-          $ref: '#/components/schemas/EventInfo'
-        sectionName:
-          type: string
-          description: Название секции
-          example: "Научные исследования"
-        juryChairman:
-          $ref: '#/components/schemas/JuryMemberInfo'
-        juryMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/JuryMemberInfo'
-        results:
-          type: array
-          description: Результаты участников, отсортированные по баллам и алфавиту
-          items:
-            $ref: '#/components/schemas/ParticipantResult'
-        organizerEmails:
-          type: array
-          items:
-            type: string
-            format: email
-
-    CustomNotificationRequest:
-      type: object
-      required:
-        - recipients
-        - message
-        - channels
-      properties:
-        recipients:
-          type: array
-          description: Получатели
-          items:
-            type: object
-            properties:
-              email:
-                type: string
-                format: email
-              telegramChatId:
-                type: string
-        message:
-          type: string
-          description: Текст сообщения
-        subject:
-          type: string
-          description: Тема письма (для email)
-        channels:
-          type: array
-          description: Каналы отправки
-          items:
-            type: string
-            enum: [EMAIL, TELEGRAM]
-
-    ProgramNotificationRequest:
-      type: object
-      required:
-        - eventName
-        - organizerEmail
-        - programDocuments
-      properties:
-        eventName:
-          type: string
-          description: Название мероприятия
-        organizerEmail:
-          type: string
-          format: email
-          description: Email организатора
-        programDocuments:
-          type: object
-          description: Ссылки или base64 содержимое документов
-          properties:
-            pdfContent:
-              type: string
-              description: PDF документ в base64 или URL
-            docContent:
-              type: string
-              description: DOC документ в base64 или URL
-        additionalNotes:
-          type: string
-          description: Дополнительные примечания
-
-    RegistrationStatusNotificationRequest:
-      type: object
-      required:
-        - email
-        - status
-      properties:
-        email:
-          type: string
-          format: email
-        telegramChatId:
-          type: string
-          description: Telegram Chat ID участника (опционально)
-        status:
-          type: string
-          enum: [CONFIRMED, PENDING]
-          description: Статус регистрации
-        statusMessage:
-          type: string
-          description: Описание статуса
-        upcomingEvents:
-          type: array
-          description: Информация о предстоящих мероприятиях
-          items:
-            type: object
-            properties:
-              eventName:
-                type: string
-              eventDate:
-                type: string
-                format: date
-              description:
-                type: string
-
-    ParticipantInfo:
-      type: object
-      required:
-        - fullName
-        - faculty
-        - facultyAbbreviation
-        - course
-        - teacher
-        - section
-        - presentationTopic
-        - email
-      properties:
-        fullName:
-          type: string
-          description: ФИО участника
-          example: "Иванов Иван Иванович"
-        faculty:
-          type: string
-          description: Факультет обучения
-          example: "Факультет информатики"
-        facultyAbbreviation:
-          type: string
-          description: Аббревиатура факультета
-          example: "ФИ"
-        course:
-          type: integer
-          description: Курс обучения
-          example: 3
-        teacher:
-          type: string
-          description: Преподаватель
-          example: "Петров П.П."
-        section:
-          type: string
-          description: Секция выступления
-          example: "Программирование"
-        presentationTopic:
-          type: string
-          description: Тема выступления
-        englishLevel:
-          type: string
-          description: Уровень учебника по английскому языку
-        participatesAsInterpreter:
-          type: boolean
-          description: Участвует на переводчиках
-        hasInterpreterEducation:
-          type: boolean
-          description: Наличие образования переводчика
-        email:
-          type: string
-          format: email
-          description: Email участника
-        telegramChatId:
-          type: string
-          description: Telegram Chat ID участника
-
-    GroupParticipantInfo:
-      type: object
-      required:
-        - fullName
-        - faculty
-        - course
-        - teacher
-        - section
-        - presentationTopic
-        - email
-      properties:
-        fullName:
-          type: string
-          description: ФИО участника
-        faculty:
-          type: string
-          description: Факультет обучения
-        course:
-          type: integer
-          description: Курс обучения
-        teacher:
-          type: string
-          description: Преподаватель
-        section:
-          type: string
-          description: Секция выступления
-        presentationTopic:
-          type: string
-          description: Тема выступления
-        englishLevel:
-          type: string
-          description: Уровень учебника по английскому языку
-        participatesAsInterpreter:
-          type: boolean
-          description: Участвует на переводчиках
-        hasInterpreterEducation:
-          type: boolean
-          description: Наличие образования переводчика
-        email:
-          type: string
-          format: email
-        telegramChatId:
-          type: string
-          description: Telegram Chat ID участника
-
-    EventInfo:
-      type: object
-      required:
-        - name
-        - date
-        - location
-      properties:
-        name:
-          type: string
-          description: Название мероприятия
-        date:
-          type: string
-          format: date
-          description: Дата проведения
-        location:
-          type: string
-          description: Место проведения
-          example: "Город, улица, здание"
-
-    JuryMemberInfo:
-      type: object
-      required:
-        - fullName
-      properties:
-        fullName:
-          type: string
-          description: ФИО члена жюри
-        degree:
-          type: string
-          description: Ученая степень
-          example: "Кандидат наук"
-        title:
-          type: string
-          description: Звание
-          example: "Доцент"
-        position:
-          type: string
-          description: Должность
-        workplace:
-          type: string
-          description: Место работы (если не СГУ)
-
-    ParticipantResult:
-      type: object
-      required:
-        - position
-        - fullName
-        - topic
-        - totalScore
-      properties:
-        position:
-          type: integer
-          description: Место участника (участники с одинаковыми баллами имеют одинаковый номер)
-        fullName:
-          type: string
-          description: ФИО участника
-        topic:
-          type: string
-          description: Тема работы
-        totalScore:
-          type: number
-          format: float
-          description: Итоговый балл
-        comments:
-          type: array
-          description: Комментарии от членов жюри
-          items:
-            type: object
-            properties:
-              juryMember:
-                type: string
-              comment:
-                type: string
-        isTopThree:
-          type: boolean
-          description: Входит ли в первые три места (для выделения жирным)
+          example: "supervisor@example.com"
 
     NotificationResponse:
       type: object
@@ -653,19 +120,6 @@ components:
                   error:
                     type: string
                     description: Описание ошибки (если status=FAILED)
-            telegram:
-              type: array
-              description: Статусы отправки в Telegram
-              items:
-                type: object
-                properties:
-                  recipient:
-                    type: string
-                  status:
-                    type: string
-                    enum: [SENT, FAILED, SKIPPED]
-                  error:
-                    type: string
 
     ErrorResponse:
       type: object
