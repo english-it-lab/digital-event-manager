@@ -52,8 +52,14 @@ async def list_participant_rankings(
 async def get_participant_ranking(
     participant_id: int,
     service: Annotated[ParticipantRankingService, Depends(get_participant_ranking_service)],
-    section_id: Annotated[int | None, Query(default=None, description="Ensure participant belongs to this section")] = None,
-    jury_id: Annotated[int | None, Query(default=None, description="Ensure participant is visible to this jury member")] = None,
+    section_id: Annotated[
+        int | None,
+        Query(default=None, description="Ensure participant belongs to this section"),
+    ] = None,
+    jury_id: Annotated[
+        int | None,
+        Query(default=None, description="Ensure participant is visible to this jury member"),
+    ] = None,
 ) -> ParticipantRankingRead:
     """Return a single leaderboard entry for the provided participant."""
     ranking = await service.get_ranking(

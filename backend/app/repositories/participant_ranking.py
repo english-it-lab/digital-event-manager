@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -162,10 +162,7 @@ class ParticipantRankingRepository:
 
         primary_column = column_map.get(sort_by) or ranked_subquery.c.total_score
 
-        if sort_order == SortOrder.DESC:
-            primary_order = primary_column.desc()
-        else:
-            primary_order = primary_column.asc()
+        primary_order = primary_column.desc() if sort_order == SortOrder.DESC else primary_column.asc()
 
         order_clauses = [primary_order]
 

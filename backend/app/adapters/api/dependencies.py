@@ -22,8 +22,8 @@ from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
-from app.services.poster_content import PosterContentService
 from app.services.participant_ranking import ParticipantRankingService
+from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
