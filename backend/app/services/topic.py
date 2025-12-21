@@ -1,10 +1,9 @@
 from fastapi import HTTPException
+from openapi_server.models.topic_create import TopicCreate
+from openapi_server.models.topic_update import TopicUpdate
 
 from app.models import Topic
 from app.repositories.topic import TopicRepository
-
-from openapi_server.models.topic_create import TopicCreate
-from openapi_server.models.topic_update import TopicUpdate
 
 
 class TopicService:

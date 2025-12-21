@@ -24,8 +24,8 @@ from app.services.jury_score import JuryScoreService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
 from app.services.technical_requirement import TechnicalRequirementService
-from app.services.university import UniversityService
 from app.services.topic import TopicService
+from app.services.university import UniversityService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -93,6 +93,7 @@ def get_section_service(
     organizer_repository = OrganizerRepository(session)
     event_repository = EventRepository(session)
     return SectionService(repository, organizer_repository, event_repository)
+
 
 def get_topic_service(
     session: Annotated[AsyncSession, Depends(get_session)],

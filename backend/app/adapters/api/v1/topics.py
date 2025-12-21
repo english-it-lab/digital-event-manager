@@ -1,21 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-
-from app.adapters.api.dependencies import get_topic_service
 from openapi_server.apis.topics_api_base import BaseTopicsApi
 from openapi_server.models.topic import Topic
 from openapi_server.models.topic_create import TopicCreate
 from openapi_server.models.topic_update import TopicUpdate
 
-from app.services.topic import TopicService
-
 from app.db.session import get_db_session
 from app.repositories.topic import TopicRepository
+from app.services.topic import TopicService
 
 
 class TopicsApiImpl(BaseTopicsApi):
     """
     Реализация Topics API (CRUD тем).
     """
+
     async def _with_service(self) -> TopicService:
         # создаём сессию для каждого вызова
         async for session in get_db_session():
