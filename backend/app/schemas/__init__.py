@@ -296,6 +296,11 @@ class SectionJuryRead(ORMModelMixin, SectionJuryBase):
     id: int
 
 
+class SectionJuryUpdate(BaseModel):
+    section_id: int | None = None
+    jury_id: int | None = None
+
+
 class JuryScoreBase(BaseModel):
     jury_id: int | None = None
     participant_id: int | None = None

@@ -25,6 +25,7 @@ from app.services.jury_score import JuryScoreService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
+from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
@@ -109,3 +110,16 @@ def get_topic_service(
 ) -> TopicService:
     topic_repository = TopicRepository(session)
     return TopicService(topic_repository)
+
+
+def get_section_jury_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionJuryService:
+    repository = SectionJuryRepository(session)
+    section_repository = SectionRepository(session)
+    jury_repository = JuryRepository(session)
+    return SectionJuryService(
+        section_jury_repository=repository,
+        section_repository=section_repository,
+        jury_repository=jury_repository,
+    )
