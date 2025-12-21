@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -19,6 +20,12 @@ class Settings(BaseSettings):
     db_password: str = Field(default="postgres")
     db_name: str = Field(default="digital_events")
     db_echo: bool = Field(default=False)
+
+    # for mail
+    
+    email_password: str # app password!
+    email_login: str
+    smtp_server: str
 
     @property
     def database_url(self) -> str:
