@@ -1,95 +1,48 @@
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+
+from app.adapters.api.dependencies import get_topic_service
 from openapi_server.apis.topics_api_base import BaseTopicsApi
 from openapi_server.models.topic import Topic
 from openapi_server.models.topic_create import TopicCreate
 from openapi_server.models.topic_update import TopicUpdate
+
+from app.services.topic import TopicService
+
+from app.db.session import get_db_session
+from app.repositories.topic import TopicRepository
 
 
 class TopicsApiImpl(BaseTopicsApi):
     """
     Реализация Topics API (CRUD тем).
     """
+    async def _with_service(self) -> TopicService:
+        # создаём сессию для каждого вызова
+        async for session in get_db_session():
+            repo = TopicRepository(session)
+            service = TopicService(repo)
+            yield service
 
-    _topics_db = {}
-    _next_id = 1
-    _draw_results_db = {}
+    async def topics_get(self, sectionId: int) -> list[Topic]:
+        async for service in self._with_service():
+            topics = await service.list_topics(sectionId)
+            return [Topic(id=t.id, section_id=t.section_id, name=t.name) for t in topics]
 
-    async def topics_get(
-        self,
-        sectionId: int,
-    ) -> list[Topic]:
-        section_topics = [topic for topic in self._topics_db.values() if topic["section_id"] == sectionId]
+    async def topics_post(self, sectionId: int, topic_create: TopicCreate) -> Topic:
+        async for service in self._with_service():
+            topic = await service.create_topic(sectionId, topic_create)
+            return Topic(id=topic.id, section_id=topic.section_id, name=topic.name)
 
-        return [Topic(**topic) for topic in section_topics]
+    async def topics_topic_id_get(self, topicId: int) -> Topic:
+        async for service in self._with_service():
+            topic = await service.get_topic(topicId)
+            return Topic(id=topic.id, section_id=topic.section_id, name=topic.name)
 
-    async def topics_post(
-        self,
-        sectionId: int,
-        topic_create: TopicCreate,
-    ) -> Topic:
-        if not topic_create.name or len(topic_create.name.strip()) < 3:
-            from fastapi import HTTPException
+    async def topics_topic_id_put(self, topicId: int, topic_update: TopicUpdate) -> Topic:
+        async for service in self._with_service():
+            topic = await service.update_topic(topicId, topic_update)
+            return Topic(id=topic.id, section_id=topic.section_id, name=topic.name)
 
-            raise HTTPException(400, "Название темы должно содержать минимум 3 символа")
-
-        new_topic = {
-            "id": self._next_id,
-            "section_id": sectionId,
-            "name": topic_create.name.strip(),
-        }
-
-        self._topics_db[self._next_id] = new_topic
-        self._next_id += 1
-
-        return Topic(**new_topic)
-
-    async def topics_topic_id_get(
-        self,
-        topicId: int,
-    ) -> Topic:
-        topic = self._topics_db.get(topicId)
-        if not topic:
-            from fastapi import HTTPException
-
-            raise HTTPException(404, f"Тема с ID {topicId} не найдена")
-
-        return Topic(**topic)
-
-    async def topics_topic_id_put(
-        self,
-        topicId: int,
-        topic_update: TopicUpdate,
-    ) -> Topic:
-        topic = self._topics_db.get(topicId)
-        if not topic:
-            from fastapi import HTTPException
-
-            raise HTTPException(404, f"Тема с ID {topicId} не найдена")
-
-        if topic_update.name is not None:
-            if len(topic_update.name.strip()) < 3:
-                from fastapi import HTTPException
-
-                raise HTTPException(400, "Название темы должно содержать минимум 3 символа")
-            topic["name"] = topic_update.name.strip()
-
-        if topic_update.section_id is not None:
-            topic["section_id"] = topic_update.section_id
-
-        self._topics_db[topicId] = topic
-        return Topic(**topic)
-
-    async def topics_topic_id_delete(
-        self,
-        topicId: int,
-    ) -> None:
-        if topicId not in self._topics_db:
-            from fastapi import HTTPException
-
-            raise HTTPException(404, f"Тема с ID {topicId} не найдена")
-
-        del self._topics_db[topicId]
-
-        for section_id, results in self._draw_results_db.items():
-            self._draw_results_db[section_id] = [
-                r for r in results if all(t["topic_id"] != topicId for t in r["topics"])
-            ]
+    async def topics_topic_id_delete(self, topicId: int) -> None:
+        async for service in self._with_service():
+            await service.delete_topic(topicId)
