@@ -376,6 +376,12 @@ class JuryScoreChangeCreate(JuryScoreChangeBase):
 class JuryScoreChangeRead(ORMModelMixin, JuryScoreChangeBase):
     id: int
 
+class JuryProgressItem(BaseModel):
+    participant_id: int
+    participant_name: str
+    topic: str | None
+    is_graded: bool
+    current_score: float | None = None  # Average score or amount, if you have already assessed it
 
 class OrganizerSectionChangeBase(BaseModel):
     section_id: int
@@ -547,4 +553,5 @@ __all__ = [
     "PosterContentCreate",
     "PosterContentRead",
     "PosterContentUpdate",
+    "JuryProgressItem"
 ]

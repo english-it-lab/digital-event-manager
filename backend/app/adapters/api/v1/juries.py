@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.adapters.api.dependencies import get_jury_service
-from app.schemas import JuryCreate, JuryRead, JuryUpdate
+from app.schemas import JuryCreate, JuryRead, JuryUpdate, JuryProgressItem
 from app.services.jury import JuryService
 
 router = APIRouter(tags=["juries"])
@@ -32,6 +32,12 @@ async def get_jury(
         )
     return JuryRead.model_validate(jury)
 
+@router.get("/{jury_id}/progress", response_model=list[JuryProgressItem])
+async def get_jury_progress(
+    jury_id: int,
+    service: Annotated[JuryService, Depends(get_jury_service)],
+) -> list[JuryProgressItem]:
+    return await service.get_jury_progress(jury_id)
 
 @router.post("/", response_model=JuryRead, status_code=status.HTTP_201_CREATED)
 async def create_jury(
