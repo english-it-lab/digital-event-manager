@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.adapters.api.dependencies import get_jury_service
-from app.schemas import JuryCreate, JuryRead, JuryUpdate, JuryProgressItem
+from app.schemas import JuryCreate, JuryProgressItem, JuryRead, JuryUpdate
 from app.services.jury import JuryService
 
 router = APIRouter(tags=["juries"])

@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select, case, func, and_
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Jury, SectionJury, Participant, Person, JuryScore
+from app.models import Jury, JuryScore, Participant, Person, SectionJury
 from app.schemas import JuryCreate, JuryUpdate
 
 

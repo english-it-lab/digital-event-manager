@@ -6,7 +6,7 @@ from app.models import Jury
 from app.repositories.jury import JuryRepository
 from app.repositories.person import PersonRepository
 from app.repositories.university import UniversityRepository
-from app.schemas import JuryCreate, JuryUpdate, JuryProgressItem
+from app.schemas import JuryCreate, JuryProgressItem, JuryUpdate
 
 
 class JuryService:
