@@ -113,9 +113,7 @@ def test_read_section_not_found(mock_section_service):
     """Тест получения несуществующей секции"""
     from fastapi import HTTPException
 
-    mock_section_service.get_section_by_id = AsyncMock(
-        side_effect=HTTPException(status_code=404, detail="Not found")
-    )
+    mock_section_service.get_section_by_id = AsyncMock(side_effect=HTTPException(status_code=404, detail="Not found"))
 
     with pytest.raises(HTTPException):
         client.get("/sections/999")
