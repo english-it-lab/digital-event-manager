@@ -6,7 +6,6 @@ from app.adapters.api.v1 import (
     participant_scores,
     poster_contents,
     section_juries,
-    sections,
     technical_requirements,
     universities,
     sections,

@@ -14,8 +14,8 @@ router = APIRouter(tags=["section-juries"])
 @router.get("/", response_model=list[SectionJuryRead])
 async def list_section_juries(
     service: Annotated[SectionJuryService, Depends(get_section_jury_service)],
-    section_id: Annotated[int | None, Query(default=None)] = None,
-    jury_id: Annotated[int | None, Query(default=None)] = None,
+    section_id: Annotated[int | None, Query()] = None,
+    jury_id: Annotated[int | None, Query()] = None,
 ) -> list[SectionJuryRead]:
     assignments = await service.list_assignments(section_id=section_id, jury_id=jury_id)
     return [SectionJuryRead.model_validate(assignment) for assignment in assignments]
