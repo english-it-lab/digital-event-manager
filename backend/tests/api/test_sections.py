@@ -1,23 +1,20 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock
-from app.main import app
+
 from app.adapters.api.dependencies import get_section_service
-from app.schemas import SectionRead
+from app.main import app
 
 # Создаем тестовый клиент
 client = TestClient(app)
 
 # Мок-данные для тестирования
-mock_section_data = {
-    "id": 1,
-    "name": "Test Section",
-    "description": "Test Description"
-}
+mock_section_data = {"id": 1, "name": "Test Section", "description": "Test Description"}
 
 mock_section_list = [
     {"id": 1, "name": "Section 1", "description": "Desc 1"},
-    {"id": 2, "name": "Section 2", "description": "Desc 2"}
+    {"id": 2, "name": "Section 2", "description": "Desc 2"},
 ]
 
 
@@ -70,10 +67,7 @@ def test_read_section(mock_section_service):
 # Тест POST / - создание секции
 def test_create_section(mock_section_service):
     """Тест создания новой секции"""
-    new_section = {
-        "name": "New Section",
-        "description": "New Description"
-    }
+    new_section = {"name": "New Section", "description": "New Description"}
 
     response = client.post("/sections/", json=new_section)
 
@@ -87,9 +81,7 @@ def test_create_section(mock_section_service):
 def test_update_section(mock_section_service):
     """Тест обновления существующей секции"""
     section_id = 1
-    update_data = {
-        "name": "Updated Section"
-    }
+    update_data = {"name": "Updated Section"}
 
     response = client.patch(f"/sections/{section_id}", json=update_data)
 
@@ -119,7 +111,11 @@ def test_read_sections_with_pagination(mock_section_service):
 
 def test_read_section_not_found(mock_section_service):
     """Тест получения несуществующей секции"""
-    mock_section_service.get_section_by_id = AsyncMock(side_effect=Exception("Not found"))
+    from fastapi import HTTPException
 
-    with pytest.raises(Exception):
-        response = client.get("/sections/999")
+    mock_section_service.get_section_by_id = AsyncMock(
+        side_effect=HTTPException(status_code=404, detail="Not found")
+    )
+
+    with pytest.raises(HTTPException):
+        client.get("/sections/999")
