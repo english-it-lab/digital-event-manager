@@ -21,15 +21,15 @@ async def list_participant_rankings(
     service: Annotated[ParticipantRankingService, Depends(get_participant_ranking_service)],
     page: Annotated[int, Query(ge=1, description="Page number starting from 1")] = 1,
     page_size: Annotated[int, Query(ge=1, le=200, description="Items per page")] = 25,
-    section_id: Annotated[int | None, Query(default=None, description="Filter by section id")] = None,
-    jury_id: Annotated[int | None, Query(default=None, description="Filter by jury section assignment")] = None,
+    section_id: Annotated[int | None, Query(description="Filter by section id")] = None,
+    jury_id: Annotated[int | None, Query(description="Filter by jury section assignment")] = None,
     sort_by: Annotated[
         ParticipantRankingSortField,
-        Query(default=ParticipantRankingSortField.TOTAL_SCORE, description="Field to sort by"),
+        Query(description="Field to sort by"),
     ] = ParticipantRankingSortField.TOTAL_SCORE,
     sort_order: Annotated[
         SortOrder,
-        Query(default=SortOrder.DESC, description="Sorting direction"),
+        Query(description="Sorting direction"),
     ] = SortOrder.DESC,
 ) -> ParticipantRankingList:
     """
@@ -54,11 +54,11 @@ async def get_participant_ranking(
     service: Annotated[ParticipantRankingService, Depends(get_participant_ranking_service)],
     section_id: Annotated[
         int | None,
-        Query(default=None, description="Ensure participant belongs to this section"),
+        Query(description="Ensure participant belongs to this section"),
     ] = None,
     jury_id: Annotated[
         int | None,
-        Query(default=None, description="Ensure participant is visible to this jury member"),
+        Query(description="Ensure participant is visible to this jury member"),
     ] = None,
 ) -> ParticipantRankingRead:
     """Return a single leaderboard entry for the provided participant."""

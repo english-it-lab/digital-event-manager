@@ -160,7 +160,9 @@ class ParticipantRankingRepository:
             ParticipantRankingSortField.SCORES_COUNT: ranked_subquery.c.scores_count,
         }
 
-        primary_column = column_map.get(sort_by) or ranked_subquery.c.total_score
+        primary_column = column_map.get(sort_by)
+        if primary_column is None:
+            primary_column = ranked_subquery.c.total_score
 
         primary_order = primary_column.desc() if sort_order == SortOrder.DESC else primary_column.asc()
 
