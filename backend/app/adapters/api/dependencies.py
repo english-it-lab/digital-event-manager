@@ -111,6 +111,11 @@ def get_topic_service(
     topic_repository = TopicRepository(session)
     return TopicService(topic_repository)
 
+def get_draw_service(
+session: Annotated[AsyncSession, Depends(get_session)]
+) -> DrawService:
+    topic_service = get_topic_service(session)
+    return DrawService(topic_service)
 
 def get_section_jury_service(
     session: Annotated[AsyncSession, Depends(get_session)],
