@@ -32,12 +32,14 @@ async def get_jury(
         )
     return JuryRead.model_validate(jury)
 
+
 @router.get("/{jury_id}/progress", response_model=list[JuryProgressItem])
 async def get_jury_progress(
     jury_id: int,
     service: Annotated[JuryService, Depends(get_jury_service)],
 ) -> list[JuryProgressItem]:
     return await service.get_jury_progress(jury_id)
+
 
 @router.post("/", response_model=JuryRead, status_code=status.HTTP_201_CREATED)
 async def create_jury(

@@ -72,37 +72,24 @@ class JuryRepository:
         """
         Get list of participants for the jury's section with grading status.
         """
-        subquery_sections = (
-            select(SectionJury.section_id)
-            .where(SectionJury.jury_id == jury_id)
-            .scalar_subquery()
-        )
+        subquery_sections = select(SectionJury.section_id).where(SectionJury.jury_id == jury_id).scalar_subquery()
         stmt = (
             select(
                 Participant.id.label("participant_id"),
                 Person.first_name,
                 Person.last_name,
                 Participant.presentation_topic,
-                case(
-                    (JuryScore.id.is_not(None), True),
-                    else_=False
-                ).label("is_graded"),
+                case((JuryScore.id.is_not(None), True), else_=False).label("is_graded"),
                 (
-                    func.coalesce(JuryScore.organization_score, 0) +
-                    func.coalesce(JuryScore.content, 0) +
-                    func.coalesce(JuryScore.visuals, 0) +
-                    func.coalesce(JuryScore.mechanics, 0) +
-                    func.coalesce(JuryScore.delivery, 0)
-                ).label("current_score")
+                    func.coalesce(JuryScore.organization_score, 0)
+                    + func.coalesce(JuryScore.content, 0)
+                    + func.coalesce(JuryScore.visuals, 0)
+                    + func.coalesce(JuryScore.mechanics, 0)
+                    + func.coalesce(JuryScore.delivery, 0)
+                ).label("current_score"),
             )
             .join(Person, Participant.person_id == Person.id)
-            .outerjoin(
-                JuryScore,
-                and_(
-                    JuryScore.participant_id == Participant.id,
-                    JuryScore.jury_id == jury_id
-                )
-            )
+            .outerjoin(JuryScore, and_(JuryScore.participant_id == Participant.id, JuryScore.jury_id == jury_id))
             .where(Participant.section_id.in_(subquery_sections))
             .order_by(Person.last_name)
         )

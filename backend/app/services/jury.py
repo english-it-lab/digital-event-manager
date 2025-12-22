@@ -96,17 +96,19 @@ class JuryService:
             )
 
         raw_data = await self._jury_repository.get_jury_progress(jury_id)
-        
+
         result = []
         for row in raw_data:
             full_name = f"{row.last_name} {row.first_name}".strip()
-            
-            result.append(JuryProgressItem(
-                participant_id=row.participant_id,
-                participant_name=full_name,
-                topic=row.presentation_topic,
-                is_graded=row.is_graded,
-                current_score=row.current_score if row.is_graded else None
-            ))
-            
+
+            result.append(
+                JuryProgressItem(
+                    participant_id=row.participant_id,
+                    participant_name=full_name,
+                    topic=row.presentation_topic,
+                    is_graded=row.is_graded,
+                    current_score=row.current_score if row.is_graded else None,
+                )
+            )
+
         return result
