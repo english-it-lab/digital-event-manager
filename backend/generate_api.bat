@@ -1,13 +1,19 @@
 @echo off
-setlocal
 
-call .venv\Scripts\activate
+if exist .venv\Scripts\activate.bat (
+    call .venv\Scripts\activate.bat
+)
+
 pip install openapi-generator-cli
-openapi-generator-cli generate -i resources/api/v1/draw.yaml -g python-fastapi -o generated/
-if exist openapi_server rmdir /s /q openapi_server
-xcopy /E /I /Y generated\src\openapi_server openapi_server
-findstr /v /c:"uvloop==0.21.0" "generated\requirements.txt" > "generated\requirements_clean.txt"
-move /y "generated\requirements_clean.txt" "generated\requirements.txt"
-copy /y "generated\requirements.txt" "openapi_server\requirements.txt"
-pip install -r "openapi_server\requirements.txt"
-rmdir /s /q generated
+
+for %%f in (resources\api\v1\*.yaml) do (
+    openapi-generator-cli generate -i %%f -g python-fastapi -o generated\
+)
+
+if exist openapi_server\ rd /s /q openapi_server
+
+xcopy generated\src\openapi_server openapi_server\ /e /i /q
+findstr /v "uvloop==0.21.0" generated\requirements.txt > openapi_server\requirements.txt
+pip install -r openapi_server\requirements.txt
+
+rd /s /q generated
