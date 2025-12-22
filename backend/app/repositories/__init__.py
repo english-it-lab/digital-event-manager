@@ -6,6 +6,7 @@ from .poster_content import PosterContentRepository
 from .technical_requirement import TechnicalRequirementRepository
 from .topic import TopicRepository
 from .university import UniversityRepository
+from .venues import VenueRepository
 
 __all__ = [
     "EventRepository",
@@ -15,4 +16,5 @@ __all__ = [
     "TechnicalRequirementRepository",
     "TopicRepository",
     "UniversityRepository",
+    "VenueRepository",
 ]

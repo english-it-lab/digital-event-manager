@@ -5,11 +5,13 @@ from app.adapters.api.v1 import (
     technical_requirements,
     universities,
     events,
+    venues,
 )
 
 router = APIRouter()
 router.include_router(universities.router, prefix="/universities")
-router.include_router(events.router,prefix="/events")
+router.include_router(events.router, prefix="/events")
+router.include_router(venues.router, prefix="/venues")
 router.include_router(
     technical_requirements.router, prefix="/technical-requirements"
 )

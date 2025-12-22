@@ -24,6 +24,9 @@ from app.repositories.participant import ParticipantRepository
 from app.services.events import EventProgramService
 from app.services.pdf_generator import PDFGeneratorService
 
+from app.repositories.venues import VenueRepository
+from app.services.venues import VenuesService
+
 
 async def get_session() -> AsyncIterator[AsyncSession]:
     async for session in get_db_session():
@@ -65,3 +68,9 @@ def get_event_program_service(
 def get_pdf_generator_service() -> PDFGeneratorService:
     """Dependency for PDF generator service."""
     return PDFGeneratorService()
+
+def get_venues(
+    session: Annotated[AsyncSession, Depends(get_session)],
+)-> VenuesService:
+    repository = VenueRepository(session)
+    return VenuesService(repository)
