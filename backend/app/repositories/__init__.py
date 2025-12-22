@@ -1,5 +1,5 @@
 # app/repositories/__init__.py
-from .event import EventRepository
+from .events import EventRepository
 from .section import SectionRepository
 from .participant import ParticipantRepository
 from .poster_content import PosterContentRepository

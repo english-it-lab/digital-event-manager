@@ -1,9 +1,10 @@
 # app/services/event_program.py
 from collections.abc import Sequence
 from app.models import Event, Section, Participant
-from app.repositories.event import EventRepository
+from app.repositories.events import EventRepository
 from app.repositories.section import SectionRepository
 from app.repositories.participant import ParticipantRepository
+from app.schemas import EventCreate
 
 class EventProgramService:
     def __init__(
@@ -16,6 +17,15 @@ class EventProgramService:
         self._section_repo = section_repo
         self._participant_repo = participant_repo
     
+
+    async def list_events(self) -> Sequence[Event]:
+        return await self._event_repo.list_events()
+
+
+    async def create_event(self, payload: EventCreate) -> Event:
+        return await self._event_repo.create_event(payload)
+
+
     async def get_event_program_data(self, event_id: int) -> dict:
         # 1. Получаем мероприятие с организатором
         event = await self._event_repo.get_event_with_organizer(event_id)

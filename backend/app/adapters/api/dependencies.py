@@ -18,10 +18,10 @@ from app.services.university import UniversityService
 """
 Dependencies for event program generation (separate to avoid circular imports)
 """
-from app.repositories.event import EventRepository
+from app.repositories.events import EventRepository
 from app.repositories.section import SectionRepository
 from app.repositories.participant import ParticipantRepository
-from app.services.event_program import EventProgramService
+from app.services.events import EventProgramService
 from app.services.pdf_generator import PDFGeneratorService
 
 
@@ -52,8 +52,6 @@ def get_poster_content_service(
     tech_req_repository = TechnicalRequirementRepository(session)
     return PosterContentService(repository, tech_req_repository)
 
-# Импортируем базовую зависимость сессии из основного файла
-from .dependencies import get_session
 
 def get_event_program_service(
     session: Annotated[AsyncSession, Depends(get_session)],
