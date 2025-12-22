@@ -1,32 +1,45 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.repositories.section import SectionRepository
+from app.repositories.topic import TopicRepository
+from app.models import Group
+from app.db.session import get_db_session
+from random import random
+
+
 
 class DrawService:
-    def __init__(self, session: AsyncSession) -> None:
-        self._session = session
+    def __init__(self,
+        section_repository: SectionRepository,
+        topic_repository: TopicRepository) -> None:
+        self._section_repository = section_repository
+        self._topic_repository = topic_repository
 
 
-   async def draw_topics(self, db: AsyncSession)
+    async def draw_topics(self, db: AsyncSession, section_id: int):
 
-       section_topics = topics_get(sectionId)
+        section = await self._section_repository.get_section_by_id(section_id)
+        print("Section id: {section_id}, section: {section}")
+        if section is None:
+            return "Секция не найдена"
 
-       if not section_topics:
+        section_topics = await self._topic_repository.list_by_section(section_id)
 
-       # Натуральная заглушка, пока никто не смог сделать нам CRUD для групп
-       session = get_db_session()
-       groups = [group for group in self..values() if topic["section_id"] == sectionId]
+        if not section_topics:
+            return "Недостаточно групп или тем"
 
-       if len(groups) < len(section_topics):
-           from fastapi import HTTPException
+        session = get_db_session()
+        stmt = select(Group).where(Group.section_id == section_id)
+        res = await self._session.execute(stmt)
+        groups = res.scalars().all()
 
-           raise HTTPException(
-               409,
-               f"Недостаточно групп ({len(groups)}) для {len(section_topics)} тем",
-           )
+        if len(groups) < len(section_topics):
+           return "Недосточно групп или тем"
 
-       random.shuffle(section_topics)
-       results = []
-       for i, topic in enumerate(section_topics):
+        random.shuffle(section_topics)
+        results = []
+        for i, topic in enumerate(section_topics):
            group = groups[i]
            results.append(
                {
@@ -41,6 +54,6 @@ class DrawService:
                }
            )
 
-       self._draw_results_db[sectionId] = results
+        self._draw_results_db[section_id] = results
 
 

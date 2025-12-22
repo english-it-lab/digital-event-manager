@@ -29,6 +29,7 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
+from app.services.draw import DrawService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
