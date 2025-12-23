@@ -60,7 +60,6 @@ def test_create_university(mock_university_service):
     assert response.json()["id"] == 1
     assert response.json()["name"] == "Test University"
     # Fix: Create the expected Pydantic model instance for comparison
- # Adjust import path
     expected_model = UniversityCreate(name="New University")
     mock_university_service.create_university.assert_called_once_with(expected_model)
 
