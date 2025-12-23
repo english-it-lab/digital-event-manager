@@ -22,7 +22,10 @@ class EventRepository:
             type=data.type, event_date=data.event_date)
         
         self._session.add(event)
+
+        await self._session.commit()
         await self._session.flush()
+        
         return event
 
     

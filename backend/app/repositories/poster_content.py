@@ -41,8 +41,8 @@ class PosterContentRepository:
             images_amount=data.images_amount,
         )
         self._session.add(content)
+        await self._session.commit()
         await self._session.flush()
-        await self._session.refresh(content)
         return content
 
     async def update_poster_content(self, content: PosterContent, data: PosterContentUpdate) -> PosterContent:

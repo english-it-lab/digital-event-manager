@@ -20,5 +20,6 @@ class VenueRepository:
     async def create_venue(self, data: VenueCreate) -> Venue:
         venue = Venue(city=data.city, street=data.street, building=data.building)
         self._session.add(venue)
+        await self._session.commit()
         await self._session.flush()
         return venue

@@ -52,8 +52,8 @@ class TechnicalRequirementRepository:
             sizes=data.sizes,
         )
         self._session.add(requirement)
+        await self._session.commit()
         await self._session.flush()
-        await self._session.refresh(requirement)
         return requirement
 
     async def update_technical_requirement(

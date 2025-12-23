@@ -9,6 +9,8 @@ from app.adapters.api.v1 import (
     technical_requirements,
     universities,
     sections,
+    events,
+    venues,
 )
 from app.adapters.api.v1.draw import DrawApiImpl
 from app.adapters.api.v1.draw_results import DrawResultsApiImpl
@@ -16,9 +18,7 @@ from app.adapters.api.v1.topics import TopicsApiImpl
 from openapi_server.apis.draw_api import router as draw_router
 from openapi_server.apis.draw_results_api import router as draw_results_router
 from openapi_server.apis.topics_api import router as topics_router
-    events,
-    venues,
-)
+
 
 router = APIRouter()
 router.include_router(universities.router, prefix="/universities")

@@ -51,8 +51,10 @@ class JuryRepository:
             access_key=data.access_key,
         )
         self._session.add(jury)
+        
+        await self._session.commit()
         await self._session.flush()
-        await self._session.refresh(jury)
+        
         return jury
 
     async def update_jury(self, jury: Jury, data: JuryUpdate) -> Jury:

@@ -26,5 +26,7 @@ class UniversityRepository:
     async def create_university(self, data: UniversityCreate) -> University:
         university = University(name=data.name)
         self._session.add(university)
+
+        await self._session.commit()
         await self._session.flush()
         return university

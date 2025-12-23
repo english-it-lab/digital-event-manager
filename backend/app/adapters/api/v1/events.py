@@ -16,7 +16,7 @@ async def list_events(
 ) -> list[EventRead]:
     events = await service.list_events()
     return [
-        EventRead.model_validate(events)
+        EventRead.model_validate(event)
         for event in events
     ]
 

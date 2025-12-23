@@ -7,12 +7,10 @@ from app.repositories.participant import ParticipantRepository
 from app.schemas import EventCreate
 
 class EventProgramService:
-    def __init__(
-        self,
-        event_repo: EventRepository,
+
+    def __init__(self, event_repo: EventRepository,
         section_repo: SectionRepository,
-        participant_repo: ParticipantRepository,
-    ):
+        participant_repo: ParticipantRepository,) -> None:
         self._event_repo = event_repo
         self._section_repo = section_repo
         self._participant_repo = participant_repo
