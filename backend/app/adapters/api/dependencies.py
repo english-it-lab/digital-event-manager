@@ -29,6 +29,7 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
+from app.services.draw import DrawService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -111,6 +112,11 @@ def get_topic_service(
     topic_repository = TopicRepository(session)
     return TopicService(topic_repository)
 
+def get_draw_service(
+session: Annotated[AsyncSession, Depends(get_session)]
+) -> DrawService:
+    topic_service = get_topic_service(session)
+    return DrawService(topic_service)
 
 def get_section_jury_service(
     session: Annotated[AsyncSession, Depends(get_session)],
