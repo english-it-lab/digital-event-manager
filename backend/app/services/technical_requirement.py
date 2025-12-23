@@ -40,18 +40,12 @@ class TechnicalRequirementService:
         Returns:
             TechnicalRequirement instance or None if not found
         """
-        return await self._repository.get_technical_requirement_by_id(
-            requirement_id, with_content=with_content
-        )
+        return await self._repository.get_technical_requirement_by_id(requirement_id, with_content=with_content)
 
-    async def create_technical_requirement(
-        self, payload: TechnicalRequirementCreate
-    ) -> TechnicalRequirement:
+    async def create_technical_requirement(self, payload: TechnicalRequirementCreate) -> TechnicalRequirement:
         """Create a new technical requirement."""
         if payload.topic_id is not None:
-            topic = await self._topic_repository.get_topic_by_id(
-                payload.topic_id
-            )
+            topic = await self._topic_repository.get_topic_by_id(payload.topic_id)
             if topic is None:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -73,25 +67,19 @@ class TechnicalRequirementService:
         Returns:
             Updated TechnicalRequirement or None if not found
         """
-        requirement = await self._repository.get_technical_requirement_by_id(
-            requirement_id
-        )
+        requirement = await self._repository.get_technical_requirement_by_id(requirement_id)
         if requirement is None:
             return None
 
         if payload.topic_id is not None:
-            topic = await self._topic_repository.get_topic_by_id(
-                payload.topic_id
-            )
+            topic = await self._topic_repository.get_topic_by_id(payload.topic_id)
             if topic is None:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"Topic with id {payload.topic_id} not found",
                 )
 
-        return await self._repository.update_technical_requirement(
-            requirement, payload
-        )
+        return await self._repository.update_technical_requirement(requirement, payload)
 
     async def delete_technical_requirement(self, requirement_id: int) -> bool:
         """
@@ -103,9 +91,7 @@ class TechnicalRequirementService:
         Returns:
             True if deleted, False if not found
         """
-        requirement = await self._repository.get_technical_requirement_by_id(
-            requirement_id
-        )
+        requirement = await self._repository.get_technical_requirement_by_id(requirement_id)
         if requirement is None:
             return False
 

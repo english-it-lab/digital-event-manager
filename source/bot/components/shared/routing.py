@@ -1,7 +1,5 @@
 from aiogram import Router, types
-from aiogram.filters import Command
 from typing import Callable, Any
-from functools import partial
 
 def create_callback_handler(
     router: Router,

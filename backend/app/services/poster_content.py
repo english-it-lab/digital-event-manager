@@ -25,9 +25,7 @@ class PosterContentService:
         """Retrieve all poster contents."""
         return await self._repository.list_poster_contents()
 
-    async def get_poster_content_by_id(
-        self, content_id: int
-    ) -> PosterContent | None:
+    async def get_poster_content_by_id(self, content_id: int) -> PosterContent | None:
         """
         Retrieve poster content by ID.
 
@@ -39,9 +37,7 @@ class PosterContentService:
         """
         return await self._repository.get_poster_content_by_id(content_id)
 
-    async def create_poster_content(
-        self, payload: PosterContentCreate
-    ) -> PosterContent:
+    async def create_poster_content(self, payload: PosterContentCreate) -> PosterContent:
         """Create new poster content."""
         if payload.technical_requirements_id is not None:
             tech_req = await self._tech_req_repository.get_technical_requirement_by_id(  # noqa: E501
@@ -55,9 +51,7 @@ class PosterContentService:
 
         return await self._repository.create_poster_content(payload)
 
-    async def update_poster_content(
-        self, content_id: int, payload: PosterContentUpdate
-    ) -> PosterContent | None:
+    async def update_poster_content(self, content_id: int, payload: PosterContentUpdate) -> PosterContent | None:
         """
         Update existing poster content.
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
@@ -144,7 +145,11 @@ class SectionBase(BaseModel):
 
 
 class SectionCreate(SectionBase):
-    pass
+    event_id: int | None = Field(None)
+
+
+class SectionUpdate(SectionBase):
+    organizer_id: int | None = Field(None)
 
 
 class SectionRead(ORMModelMixin, SectionBase):
@@ -271,6 +276,13 @@ class JuryRead(ORMModelMixin, JuryBase):
     id: int
 
 
+class JuryUpdate(BaseModel):
+    university_id: int | None = None
+    person_id: int | None = None
+    is_chairman: bool | None = None
+    access_key: int | None = None
+
+
 class SectionJuryBase(BaseModel):
     section_id: int
     jury_id: int
@@ -282,6 +294,11 @@ class SectionJuryCreate(SectionJuryBase):
 
 class SectionJuryRead(ORMModelMixin, SectionJuryBase):
     id: int
+
+
+class SectionJuryUpdate(BaseModel):
+    section_id: int | None = None
+    jury_id: int | None = None
 
 
 class JuryScoreBase(BaseModel):
@@ -296,11 +313,101 @@ class JuryScoreBase(BaseModel):
 
 
 class JuryScoreCreate(JuryScoreBase):
-    pass
+    @field_validator("organization_score", "content", "visuals", "mechanics", "delivery")
+    @classmethod
+    def validate_score_range(cls, v: float | None) -> float | None:
+        """Validate that scores are between 0.0 and 10.0."""
+        if v is not None and (v < 0.0 or v > 10.0):
+            raise ValueError("Score must be between 0.0 and 10.0")
+        return v
 
 
 class JuryScoreRead(ORMModelMixin, JuryScoreBase):
     id: int
+
+
+class JuryScoreUpdate(BaseModel):
+    organization_score: float | None = None
+    content: float | None = None
+    visuals: float | None = None
+    mechanics: float | None = None
+    delivery: float | None = None
+    comment: str | None = None
+
+    @field_validator("organization_score", "content", "visuals", "mechanics", "delivery")
+    @classmethod
+    def validate_score_range(cls, v: float | None) -> float | None:
+        """Validate that scores are between 0.0 and 10.0."""
+        if v is not None and (v < 0.0 or v > 10.0):
+            raise ValueError("Score must be between 0.0 and 10.0")
+        return v
+
+
+class ParticipantScoreSummary(BaseModel):
+    """Summary of all scores for a participant with calculated average."""
+
+    participant_id: int
+    scores: list[JuryScoreRead]
+    average_score: float | None  # None if no scores exist
+
+    @staticmethod
+    def calculate_average(scores: list[JuryScoreRead]) -> float | None:
+        """Calculate average of all 5 criteria across all jury scores."""
+        if not scores:
+            return None
+
+        total_sum = 0.0
+        count = 0
+
+        for score in scores:
+            for field in ["organization_score", "content", "visuals", "mechanics", "delivery"]:
+                value = getattr(score, field)
+                if value is not None:
+                    total_sum += value
+                    count += 1
+
+        return round(total_sum / count, 2) if count > 0 else None
+
+
+class SortOrder(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+
+class ParticipantRankingSortField(str, Enum):
+    TOTAL_SCORE = "total_score"
+    LAST_NAME = "last_name"
+    FIRST_NAME = "first_name"
+    RANK = "rank"
+    SCORES_COUNT = "scores_count"
+
+
+class ParticipantRankingRead(BaseModel):
+    """Single row from the aggregated leaderboard."""
+
+    participant_id: int
+    person_id: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    middle_name: str | None = None
+    section_id: int | None = None
+    section_name: str | None = None
+    presentation_topic: str | None = None
+    total_score: float
+    scores_count: int
+    rank: int
+
+
+class ParticipantRankingList(BaseModel):
+    """Paginated leaderboard response."""
+
+    total: int
+    page: int
+    page_size: int
+    pages: int
+    has_next: bool
+    has_previous: bool
+    items: list[ParticipantRankingRead]
 
 
 class JuryScoreChangeBase(BaseModel):
@@ -341,9 +448,7 @@ class OrganizerParticipantChangeCreate(OrganizerParticipantChangeBase):
     pass
 
 
-class OrganizerParticipantChangeRead(
-    ORMModelMixin, OrganizerParticipantChangeBase
-):
+class OrganizerParticipantChangeRead(ORMModelMixin, OrganizerParticipantChangeBase):
     id: int
 
 
@@ -381,9 +486,7 @@ class TechnicalRequirementUpdate(BaseModel):
         return v
 
 
-class TechnicalRequirementReadWithContent(
-    ORMModelMixin, TechnicalRequirementBase
-):
+class TechnicalRequirementReadWithContent(ORMModelMixin, TechnicalRequirementBase):
     id: int
     posters_content: list[PosterContentRead] = []
 
@@ -439,6 +542,7 @@ __all__ = [
     "TextbookLevelRead",
     "SectionBase",
     "SectionCreate",
+    "SectionUpdate",
     "SectionRead",
     "EventSectionBase",
     "EventSectionCreate",
@@ -470,6 +574,12 @@ __all__ = [
     "JuryScoreBase",
     "JuryScoreCreate",
     "JuryScoreRead",
+    "JuryScoreUpdate",
+    "ParticipantScoreSummary",
+    "SortOrder",
+    "ParticipantRankingSortField",
+    "ParticipantRankingRead",
+    "ParticipantRankingList",
     "JuryScoreChangeBase",
     "JuryScoreChangeCreate",
     "JuryScoreChangeRead",
