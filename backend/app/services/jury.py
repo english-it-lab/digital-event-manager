@@ -6,7 +6,7 @@ from app.models import Jury
 from app.repositories.jury import JuryRepository
 from app.repositories.person import PersonRepository
 from app.repositories.university import UniversityRepository
-from app.schemas import JuryCreate, JuryUpdate
+from app.schemas import JuryCreate, JuryProgressItem, JuryUpdate
 
 
 class JuryService:
@@ -86,3 +86,29 @@ class JuryService:
 
         await self._jury_repository.delete_jury(jury)
         return True
+
+    async def get_jury_progress(self, jury_id: int) -> list[JuryProgressItem]:
+        jury = await self._jury_repository.get_jury_by_id(jury_id)
+        if jury is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Jury member with id {jury_id} not found",
+            )
+
+        raw_data = await self._jury_repository.get_jury_progress(jury_id)
+
+        result = []
+        for row in raw_data:
+            full_name = f"{row.last_name} {row.first_name}".strip()
+
+            result.append(
+                JuryProgressItem(
+                    participant_id=row.participant_id,
+                    participant_name=full_name,
+                    topic=row.presentation_topic,
+                    is_graded=row.is_graded,
+                    current_score=row.current_score if row.is_graded else None,
+                )
+            )
+
+        return result
