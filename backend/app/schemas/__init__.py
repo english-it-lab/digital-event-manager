@@ -511,6 +511,18 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
+class ScoreHistoryRead(BaseModel):
+    id: int
+    jury_score_id: int
+    jury_id: int | None
+    old_score: float | None
+    new_score: float | None
+    changed_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 __all__ = [
     "ORMModelMixin",
     "UniversityBase",
@@ -598,4 +610,5 @@ __all__ = [
     "PosterContentCreate",
     "PosterContentRead",
     "PosterContentUpdate",
+    "ScoreHistoryRead",
 ]

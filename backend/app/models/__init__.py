@@ -261,6 +261,9 @@ class Jury(Base):
     section_juries: Mapped[list[SectionJury]] = relationship(back_populates="jury")
     jury_scores: Mapped[list[JuryScore]] = relationship(back_populates="jury")
     jury_score_changes: Mapped[list[JuryScoreChange]] = relationship(back_populates="jury")
+    score_history_items: Mapped[list["ScoreHistory"]] = relationship(
+        back_populates="jury"
+    )
 
 
 class SectionJury(Base):
@@ -292,6 +295,9 @@ class JuryScore(Base):
     jury: Mapped[Jury | None] = relationship(back_populates="jury_scores")
     participant: Mapped[Participant | None] = relationship(back_populates="jury_scores")
     changes: Mapped[list[JuryScoreChange]] = relationship(back_populates="jury_score")
+    score_history: Mapped[list["ScoreHistory"]] = relationship(
+        back_populates="jury_score", cascade="all, delete-orphan"
+    )
 
 
 class JuryScoreChange(Base):
@@ -355,6 +361,30 @@ class PosterContent(Base):
     technical_requirement: Mapped[TechnicalRequirement | None] = relationship(back_populates="posters_content")
 
 
+class ScoreHistory(Base):
+    __tablename__ = "score_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    jury_score_id: Mapped[int] = mapped_column(
+        ForeignKey("jury_scores.id", ondelete="CASCADE")
+    )
+
+    jury_id: Mapped[int | None] = mapped_column(
+        ForeignKey("juries.id", ondelete="SET NULL")
+    )
+
+    old_score: Mapped[float | None] = mapped_column(Float)
+    new_score: Mapped[float | None] = mapped_column(Float)
+
+    changed_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    jury_score: Mapped["JuryScore"] = relationship(back_populates="score_history")
+    jury: Mapped["Jury | None"] = relationship(back_populates="score_history_items")
+
+
 __all__ = [
     "Base",
     "University",
@@ -382,4 +412,5 @@ __all__ = [
     "OrganizerParticipantChange",
     "TechnicalRequirement",
     "PosterContent",
+    "ScoreHistory",
 ]
