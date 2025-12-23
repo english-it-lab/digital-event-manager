@@ -5,11 +5,11 @@ from fastapi.testclient import TestClient
 
 from app.adapters.api.dependencies import get_university_service
 from app.main import app
+from app.schemas import UniversityCreate
 
-# Создаем тестовый клиент
 client = TestClient(app)
 
-# Мок-данные для тестирования
+
 mock_university_data = {"id": 1, "name": "Test University", "description": "Test Description"}
 
 mock_university_list = [
@@ -59,7 +59,10 @@ def test_create_university(mock_university_service):
     assert response.status_code == 201
     assert response.json()["id"] == 1
     assert response.json()["name"] == "Test University"
-    mock_university_service.create_university.assert_called_once_with({"name": "New University"})
+    # Fix: Create the expected Pydantic model instance for comparison
+ # Adjust import path
+    expected_model = UniversityCreate(name="New University")
+    mock_university_service.create_university.assert_called_once_with(expected_model)
 
 
 # Дополнительные тесты для edge cases
