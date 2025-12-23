@@ -44,7 +44,7 @@ def override_dependencies(mock_section_service):
 # Тест GET / - получение списка секций
 def test_read_sections(mock_section_service):
     """Тест получения списка всех секций"""
-    response = client.get("/sections/?skip=0&limit=100")
+    response = client.get("/api/v1/sections/?skip=0&limit=100")
 
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -56,7 +56,7 @@ def test_read_sections(mock_section_service):
 def test_read_section(mock_section_service):
     """Тест получения секции по ID"""
     section_id = 1
-    response = client.get(f"/sections/{section_id}")
+    response = client.get(f"/api/v1/sections/{section_id}")
 
     assert response.status_code == 200
     assert response.json()["id"] == 1
@@ -69,7 +69,7 @@ def test_create_section(mock_section_service):
     """Тест создания новой секции"""
     new_section = {"name": "New Section", "description": "New Description"}
 
-    response = client.post("/sections/", json=new_section)
+    response = client.post("/api/v1/sections/", json=new_section)
 
     assert response.status_code == 201
     assert response.json()["id"] == 1
@@ -83,7 +83,7 @@ def test_update_section(mock_section_service):
     section_id = 1
     update_data = {"name": "Updated Section"}
 
-    response = client.patch(f"/sections/{section_id}", json=update_data)
+    response = client.patch(f"/api/v1/sections/{section_id}", json=update_data)
 
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Section"
@@ -94,7 +94,7 @@ def test_update_section(mock_section_service):
 def test_delete_section(mock_section_service):
     """Тест удаления секции"""
     section_id = 1
-    response = client.delete(f"/sections/{section_id}")
+    response = client.delete(f"/api/v1/sections/{section_id}")
 
     assert response.status_code == 204
     mock_section_service.delete_section.assert_called_once_with(section_id)
@@ -103,7 +103,7 @@ def test_delete_section(mock_section_service):
 # Дополнительные тесты для edge cases
 def test_read_sections_with_pagination(mock_section_service):
     """Тест пагинации списка секций"""
-    response = client.get("/sections/?skip=10&limit=5")
+    response = client.get("/api/v1/sections/?skip=10&limit=5")
 
     assert response.status_code == 200
     mock_section_service.list_sections.assert_called_once_with(10, 5)
@@ -115,5 +115,7 @@ def test_read_section_not_found(mock_section_service):
 
     mock_section_service.get_section_by_id = AsyncMock(side_effect=HTTPException(status_code=404, detail="Not found"))
 
-    with pytest.raises(HTTPException):
-        client.get("/sections/999")
+    response = client.get("/api/v1/sections/999")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Not found"
+    mock_section_service.get_section_by_id.assert_called_once_with(999)
