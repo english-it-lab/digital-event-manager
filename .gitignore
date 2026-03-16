@@ -8,3 +8,4 @@ source/bot/database/instance/*.db
 
 .idea/
 .idea
+.DS_Store
