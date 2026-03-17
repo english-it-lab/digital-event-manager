@@ -197,6 +197,13 @@ class GroupRead(ORMModelMixin, GroupBase):
     id: int
 
 
+class GroupUpdate(BaseModel):
+    section_id: int | None = None
+    name: str | None = None
+    member_count: int | None = None
+    registration_time: datetime | None = None
+
+
 class GroupTopicBase(BaseModel):
     group_id: int
     topic_id: int | None = None
@@ -561,6 +568,7 @@ __all__ = [
     "GroupBase",
     "GroupCreate",
     "GroupRead",
+    "GroupUpdate",
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
