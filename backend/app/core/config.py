@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     db_name: str = Field(default="digital_events")
     db_echo: bool = Field(default=False)
 
+    jwt_secret_key: str = Field(default="test-secret-key")
+
     @property
     def database_url(self) -> str:
         """Async connection string for SQLAlchemy."""

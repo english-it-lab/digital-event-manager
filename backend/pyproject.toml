@@ -10,6 +10,7 @@ dependencies = [
     "fastapi",
     "pydantic-settings",
     "python-dotenv",
+    "python-jose[cryptography]",
     "sqlalchemy",
     "uvicorn[standard]",
 ]

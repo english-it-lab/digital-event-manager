@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.adapters.api.v1 import (
     juries,
+    jwts,
     participant_rankings,
     participant_scores,
     poster_contents,
@@ -22,6 +23,7 @@ router.include_router(universities.router, prefix="/universities")
 router.include_router(technical_requirements.router, prefix="/technical-requirements")
 router.include_router(poster_contents.router, prefix="/poster-contents")
 router.include_router(juries.router, prefix="/juries")
+router.include_router(jwts.router, prefix="/jwts")
 router.include_router(participant_scores.router, prefix="/participants/{participant_id}/scores")
 router.include_router(participant_rankings.router, prefix="/participant-rankings")
 router.include_router(sections.router, prefix="/sections")
