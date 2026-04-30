@@ -1,17 +1,15 @@
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 
 from app.models import (
-    Group,
-    GroupTopic,
-    Topic,
-    GroupParticipant,
-    Participant,
-    Person,
-    TechnicalRequirement,
-    PosterContent,
-    Section,
     EventSection,
+    Group,
+    GroupParticipant,
+    GroupTopic,
+    Participant,
+    Section,
+    TechnicalRequirement,
+    Topic,
 )
 
 
@@ -30,7 +28,6 @@ class NotificationRepository:
                 .joinedload(GroupTopic.topic)
                 .selectinload(Topic.technical_requirements)
                 .joinedload(TechnicalRequirement.posters_content),
-
                 selectinload(Group.group_participants)
                 .joinedload(GroupParticipant.participant)
                 .joinedload(Participant.person),
