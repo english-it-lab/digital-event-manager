@@ -1,6 +1,6 @@
-from app.services.send_mails import send_email
-from app.repositories.notification import NotificationRepository
 from app.repositories.event import EventRepository
+from app.repositories.notification import NotificationRepository
+from app.services.send_mails import send_email
 
 
 class NotificationService:
@@ -32,10 +32,7 @@ class NotificationService:
 
             requirements = self._extract_requirements(topic)
 
-            subject = (
-                f"[{event.name} {event.event_date.year}] "
-                f"{group.name} - Результаты жеребьевки"
-            )
+            subject = f"[{event.name} {event.event_date.year}] {group.name} - Результаты жеребьевки"
 
             body = self._build_body(
                 event_name=event.name,
