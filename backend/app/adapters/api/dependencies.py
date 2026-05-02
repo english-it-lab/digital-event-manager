@@ -29,6 +29,8 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
+from app.services.email_confirmation import EmailConfirmationService
+from app.services.email_sender import EmailSenderService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -123,3 +125,10 @@ def get_section_jury_service(
         section_repository=section_repository,
         jury_repository=jury_repository,
     )
+
+
+def get_email_confirmation_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> EmailConfirmationService:
+    email_sender = EmailSenderService()
+    return EmailConfirmationService(email_sender=email_sender)

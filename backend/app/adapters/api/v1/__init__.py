@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.adapters.api.v1 import (
+    email_confirmations,
     juries,
     participant_rankings,
     participant_scores,
@@ -18,6 +19,7 @@ from openapi_server.apis.draw_results_api import router as draw_results_router
 from openapi_server.apis.topics_api import router as topics_router
 
 router = APIRouter()
+router.include_router(email_confirmations.router, prefix="/email-confirmations")
 router.include_router(universities.router, prefix="/universities")
 router.include_router(technical_requirements.router, prefix="/technical-requirements")
 router.include_router(poster_contents.router, prefix="/poster-contents")

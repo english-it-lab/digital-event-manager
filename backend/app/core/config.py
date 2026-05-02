@@ -20,6 +20,16 @@ class Settings(BaseSettings):
     db_name: str = Field(default="digital_events")
     db_echo: bool = Field(default=False)
 
+    email_confirmation_secret_key: str = Field(default="test-email-confirmation-secret")
+
+    # SMTP configuration
+    smtp_host: str = Field(default="smtp.gmail.com")
+    smtp_port: int = Field(default=587)
+    smtp_user: str = Field(default="")
+    smtp_password: str = Field(default="")
+    smtp_from_email: str = Field(default="noreply@example.com")
+    smtp_use_tls: bool = Field(default=True)
+
     @property
     def database_url(self) -> str:
         """Async connection string for SQLAlchemy."""
