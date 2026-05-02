@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.adapters.api.dependencies import get_email_confirmation_service
-from app.schemas.email_confirmation import (
+from app.schemas import (
     EmailConfirmationRequest,
     EmailConfirmationResponse,
     EmailVerificationRequest,

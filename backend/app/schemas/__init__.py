@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from annotated_types import MaxLen
 
 
 class ORMModelMixin:
@@ -14,7 +15,7 @@ class ORMModelMixin:
 
 
 class UniversityBase(BaseModel):
-    name: constr(max_length=255)
+    name: Annotated[str, MaxLen(255)]
 
 
 class UniversityCreate(UniversityBase):
@@ -519,6 +520,33 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
+class EmailConfirmationRequest(BaseModel):
+    """Request for email confirmation code generation."""
+
+    email: EmailStr
+
+
+class EmailConfirmationResponse(BaseModel):
+    """Response confirming code sent."""
+
+    message: str
+    email_masked: str
+
+
+class EmailVerificationRequest(BaseModel):
+    """Request for email code verification."""
+
+    email: EmailStr
+    code: str
+
+
+class EmailVerificationResponse(BaseModel):
+    """Response for email verification result."""
+
+    success: bool
+    message: str
+
+
 __all__ = [
     "ORMModelMixin",
     "UniversityBase",
@@ -607,4 +635,8 @@ __all__ = [
     "PosterContentRead",
     "PosterContentUpdate",
     "JuryProgressItem",
+    "EmailConfirmationRequest",
+    "EmailConfirmationResponse",
+    "EmailVerificationRequest",
+    "EmailVerificationResponse",
 ]
