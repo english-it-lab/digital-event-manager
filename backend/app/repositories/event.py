@@ -14,3 +14,9 @@ class EventRepository:
         """Checks the existence of a record in the table."""
         stmt = select(exists().where(Event.id == event_id))
         return await self._session.scalar(stmt)
+
+    async def get_by_id(self, event_id: int) -> Event | None:
+        """Get event by id."""
+        stmt = select(Event).where(Event.id == event_id)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
