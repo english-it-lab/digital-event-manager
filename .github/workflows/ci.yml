@@ -28,6 +28,43 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     uses: PANiXiDA-Infrastructure/ci-cd/.github/workflows/resolve-environment.yml@main
 
+  tests:
+      runs-on: ubuntu-latest
+      needs: [ ruff ]
+      steps:
+          -   uses: actions/checkout@v4
+
+          -   name: Install system dependencies  # ← ПЕРВЫЙ ШАГ!
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y python3.12-dev gcc build-essential
+
+          -   uses: actions/setup-python@v5  # ← ВТОРОЙ
+              with:
+                  python-version: '3.12'
+
+          -   name: Generate openapi_server
+              working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
+              run: |
+                  pip install openapi-generator-cli
+                  openapi-generator-cli generate -i resources/api/v1/draw.yaml -g python-fastapi -o generated/
+                  rm -rf openapi_server || true
+                  cp -r generated/src/openapi_server openapi_server
+                  grep -v "uvloop==0.21.0" generated/requirements.txt > generated/requirements_clean.txt 2>/dev/null || true
+                  mv generated/requirements_clean.txt generated/requirements.txt || true
+                  cp generated/requirements.txt openapi_server/requirements.txt
+                  pip install --only-binary=all -r openapi_server/requirements.txt || pip install -r openapi_server/requirements.txt
+                  rm -rf generated
+
+          -   name: Install project deps and test
+              working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
+              run: |
+                  pip install --only-binary=all \
+                    fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv pytest pytest-asyncio httpx \
+                    || pip install fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv pytest pytest-asyncio httpx
+                  pip install --only-binary=httptools,uvloop,websockets "uvicorn[standard]" || pip install uvicorn  # Fallback to no extras
+                  PYTHONPATH=. pytest tests/ -s -v --tb=short
+
   build:
       if: ${{ github.event_name != 'pull_request' }}
       needs: [ ruff ]
@@ -41,7 +78,7 @@ jobs:
 
   deploy:
     if: ${{ github.event_name != 'pull_request' }}
-    needs: [ build, resolve-env ]
+    needs: [ build, resolve-env, tests ]
     runs-on: ubuntu-latest
     environment: ${{ needs.resolve-env.outputs.environment }}
     steps:
@@ -61,4 +98,4 @@ jobs:
 
           registry-url: ${{ vars.REGISTRY_URL }}
           registry-user: ${{ secrets.REGISTRY_USER }}
-          registry-token: ${{ secrets.REGISTRY_TOKEN }}        
+          registry-token: ${{ secrets.REGISTRY_TOKEN }}

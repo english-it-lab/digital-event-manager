@@ -10,6 +10,7 @@ from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
 from app.repositories.organizer import OrganizerRepository
 from app.repositories.participant import ParticipantRepository
+from app.repositories.participant_ranking import ParticipantRankingRepository
 from app.repositories.person import PersonRepository
 from app.repositories.poster_content import PosterContentRepository
 from app.repositories.section import SectionRepository
@@ -21,9 +22,12 @@ from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
+from app.services.participant_ranking import ParticipantRankingService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
+from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
+from app.services.topic import TopicService
 from app.services.university import UniversityService
 
 
@@ -92,3 +96,30 @@ def get_section_service(
     organizer_repository = OrganizerRepository(session)
     event_repository = EventRepository(session)
     return SectionService(repository, organizer_repository, event_repository)
+
+
+def get_participant_ranking_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ParticipantRankingService:
+    repository = ParticipantRankingRepository(session)
+    return ParticipantRankingService(repository)
+
+
+def get_topic_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> TopicService:
+    topic_repository = TopicRepository(session)
+    return TopicService(topic_repository)
+
+
+def get_section_jury_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionJuryService:
+    repository = SectionJuryRepository(session)
+    section_repository = SectionRepository(session)
+    jury_repository = JuryRepository(session)
+    return SectionJuryService(
+        section_jury_repository=repository,
+        section_repository=section_repository,
+        jury_repository=jury_repository,
+    )

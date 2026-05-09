@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
@@ -295,6 +296,11 @@ class SectionJuryRead(ORMModelMixin, SectionJuryBase):
     id: int
 
 
+class SectionJuryUpdate(BaseModel):
+    section_id: int | None = None
+    jury_id: int | None = None
+
+
 class JuryScoreBase(BaseModel):
     jury_id: int | None = None
     participant_id: int | None = None
@@ -363,6 +369,47 @@ class ParticipantScoreSummary(BaseModel):
         return round(total_sum / count, 2) if count > 0 else None
 
 
+class SortOrder(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+
+class ParticipantRankingSortField(str, Enum):
+    TOTAL_SCORE = "total_score"
+    LAST_NAME = "last_name"
+    FIRST_NAME = "first_name"
+    RANK = "rank"
+    SCORES_COUNT = "scores_count"
+
+
+class ParticipantRankingRead(BaseModel):
+    """Single row from the aggregated leaderboard."""
+
+    participant_id: int
+    person_id: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    middle_name: str | None = None
+    section_id: int | None = None
+    section_name: str | None = None
+    presentation_topic: str | None = None
+    total_score: float
+    scores_count: int
+    rank: int
+
+
+class ParticipantRankingList(BaseModel):
+    """Paginated leaderboard response."""
+
+    total: int
+    page: int
+    page_size: int
+    pages: int
+    has_next: bool
+    has_previous: bool
+    items: list[ParticipantRankingRead]
+
+
 class JuryScoreChangeBase(BaseModel):
     jury_scores_id: int
     jury_id: int | None = None
@@ -375,6 +422,14 @@ class JuryScoreChangeCreate(JuryScoreChangeBase):
 
 class JuryScoreChangeRead(ORMModelMixin, JuryScoreChangeBase):
     id: int
+
+
+class JuryProgressItem(BaseModel):
+    participant_id: int
+    participant_name: str
+    topic: str | None
+    is_graded: bool
+    current_score: float | None = None  # Average score or amount, if you have already assessed it
 
 
 class OrganizerSectionChangeBase(BaseModel):
@@ -529,6 +584,10 @@ __all__ = [
     "JuryScoreRead",
     "JuryScoreUpdate",
     "ParticipantScoreSummary",
+    "SortOrder",
+    "ParticipantRankingSortField",
+    "ParticipantRankingRead",
+    "ParticipantRankingList",
     "JuryScoreChangeBase",
     "JuryScoreChangeCreate",
     "JuryScoreChangeRead",
@@ -547,4 +606,5 @@ __all__ = [
     "PosterContentCreate",
     "PosterContentRead",
     "PosterContentUpdate",
+    "JuryProgressItem",
 ]
