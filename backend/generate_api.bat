@@ -1,10 +1,13 @@
 @echo off
+setlocal
 
-if exist .venv\Scripts\activate.bat (
-    call .venv\Scripts\activate.bat
+if not exist .venv\Scripts\activate.bat (
+    echo Error: virtual environment is not found at .venv\Scripts\activate.bat
+    exit /b 1
 )
 
-pip install openapi-generator-cli
+call .venv\Scripts\activate.bat
+pip install openapi-generator-cli==7.17.0 -qq
 
 for %%f in (resources\api\v1\*.yaml) do (
     openapi-generator-cli generate -i %%f -g python-fastapi -o generated\

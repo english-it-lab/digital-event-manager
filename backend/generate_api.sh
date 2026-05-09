@@ -5,9 +5,12 @@ if [ -f ".venv/bin/activate" ]; then
     . .venv/bin/activate
 elif [ -f ".venv/Scripts/activate" ]; then
     . .venv/Scripts/activate
+else
+    echo "Error: virtual environment is not found (.venv/bin/activate or .venv/Scripts/activate)." >&2
+    exit 1
 fi
 
-pip install openapi-generator-cli
+pip install openapi-generator-cli==7.17.0 -qq
 
 for yaml_file in resources/api/v1/*.yaml; do
     openapi-generator-cli generate \
