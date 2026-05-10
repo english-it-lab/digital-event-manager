@@ -17,27 +17,27 @@ paths:
     post:
       tags:
         - Draw
-      summary: Отправить результаты жеребьевки группе
+      summary: Отправить уведомления по результатам жеребьевки мероприятия
       description: |
-        Отправляет уведомление на email всех участников группы и руководителю с назначенной темой
-        и техническими требованиями.
-        Тема письма: [Название мероприятия + год проведения] [Название группы] - Результаты жеребьевки
-      operationId: sendDrawResultsNotification
+        Принимает идентификатор мероприятия.
+        Сервис самостоятельно получает группы мероприятия, назначенные темы,
+        технические требования и email участников, после чего отправляет уведомления.
+      operationId: sendDrawNotifications
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DrawResultsNotificationRequest'
+              $ref: '#/components/schemas/SendDrawNotificationsRequest'
       responses:
         '200':
-          description: Уведомление о результатах жеребьевки отправлено
+          description: Уведомления о результатах жеребьевки отправлены
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotificationResponse'
-        '400':
-          description: Некорректные данные запроса
+        '404':
+          description: Мероприятие не найдено
           content:
             application/json:
               schema:
@@ -51,51 +51,22 @@ paths:
 
 components:
   schemas:
-    DrawResultsNotificationRequest:
+    SendDrawNotificationsRequest:
       type: object
       required:
-        - eventName
-        - eventYear
-        - groupName
-        - assignedTopic
-        - technicalRequirements
-        - participantEmails
+        - eventId
       properties:
-        eventName:
-          type: string
-          description: Название мероприятия
-          example: "Плакаты 1"
-        eventYear:
+        eventId:
           type: integer
-          description: Год проведения
-          example: 2024
-        groupName:
-          type: string
-          description: Название группы
-          example: "Группа А"
-        assignedTopic:
-          type: string
-          description: Назначенная тема
-          example: "Экологические проблемы современности"
-        technicalRequirements:
-          type: string
-          description: Технические требования к оформлению работы
-          example: "Формат A1, содержание плакатов..."
-        participantEmails:
-          type: array
-          items:
-            type: string
-            format: email
-          description: Email всех участников группы
-          example: ["student1@example.com", "student2@example.com"]
-        supervisorEmail:
-          type: string
-          format: email
-          description: Email руководителя группы
-          example: "supervisor@example.com"
+          minimum: 1
+          description: Идентификатор мероприятия
+          example: 1
 
     NotificationResponse:
       type: object
+      required:
+        - success
+        - message
       properties:
         success:
           type: boolean
@@ -103,23 +74,7 @@ components:
         message:
           type: string
           description: Сообщение о результате
-        deliveryStatus:
-          type: object
-          properties:
-            email:
-              type: array
-              description: Статусы отправки email
-              items:
-                type: object
-                properties:
-                  recipient:
-                    type: string
-                  status:
-                    type: string
-                    enum: [SENT, FAILED]
-                  error:
-                    type: string
-                    description: Описание ошибки (если status=FAILED)
+          example: "Уведомления успешно отправлены"
 
     ErrorResponse:
       type: object
