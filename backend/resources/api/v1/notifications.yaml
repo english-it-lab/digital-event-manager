@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Цифровой Управляющий Мероприятиями - Draw Notifications API
+  description: API для отправки уведомлений о результатах жеребьевки
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+    description: Server
+
+tags:
+  - name: Draw
+    description: Уведомления о жеребьевке
+
+paths:
+  /notifications/draw/results:
+    post:
+      tags:
+        - Draw
+      summary: Отправить уведомления по результатам жеребьевки мероприятия
+      description: |
+        Принимает идентификатор мероприятия.
+        Сервис самостоятельно получает группы мероприятия, назначенные темы,
+        технические требования и email участников, после чего отправляет уведомления.
+      operationId: sendDrawNotifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendDrawNotificationsRequest'
+      responses:
+        '200':
+          description: Уведомления о результатах жеребьевки отправлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '404':
+          description: Мероприятие не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Ошибка при отправке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    SendDrawNotificationsRequest:
+      type: object
+      required:
+        - eventId
+      properties:
+        eventId:
+          type: integer
+          minimum: 1
+          description: Идентификатор мероприятия
+          example: 1
+
+    NotificationResponse:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+          description: Успешность операции
+        message:
+          type: string
+          description: Сообщение о результате
+          example: "Уведомления успешно отправлены"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Код ошибки
+        message:
+          type: string
+          description: Описание ошибки
+        details:
+          type: object
+          description: Дополнительная информация об ошибке
