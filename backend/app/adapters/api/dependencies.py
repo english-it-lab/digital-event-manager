@@ -18,6 +18,7 @@ from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
     TechnicalRequirementRepository,
 )
+from app.repositories.group import GroupRepository
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.services.jury import JuryService
@@ -29,6 +30,7 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
+from app.services.group import GroupService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -123,3 +125,21 @@ def get_section_jury_service(
         section_repository=section_repository,
         jury_repository=jury_repository,
     )
+
+def get_section_repository(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionRepository:
+    return SectionRepository(session)
+
+def get_group_repository(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> GroupRepository:
+    return GroupRepository(session)
+
+
+def get_group_service(
+    group_repo: Annotated[GroupRepository, Depends(get_group_repository)],
+    section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
+) -> GroupService:
+    return GroupService(group_repo, section_repo)
+
