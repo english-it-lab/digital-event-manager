@@ -7,12 +7,15 @@ info:
     группами и подачи заявок на участие в секции мероприятия.
 
     Покрываемые флоу:
-      1. Регистрация участника (заявка + подтверждение по e-mail).
+      1. Регистрация участника (заявка по e-mail; подтверждение e-mail
+         выполняется неявно при первой успешной авторизации по OTP).
       2. Авторизация по одноразовому паролю (OTP), отправляемому на e-mail.
-      3. Создание группы лидером и добавление участников лидером.
-      4. Подача заявки группой на участие в секции мероприятия и её
-         подтверждение организатором; после подтверждения смена группы
-         запрещена.
+         Каждая успешная проверка OTP подтверждает владение e-mail.
+      3. Создание группы лидером (без привязки к секции) и добавление
+         участников лидером.
+      4. Подача заявки группой на участие в секции мероприятия (секция
+         указывается в момент подачи заявки) и её подтверждение
+         организатором; после подтверждения смена группы запрещена.
 
 servers:
   - url: /api/v1
@@ -20,9 +23,11 @@ servers:
 
 tags:
   - name: Registration
-    description: Регистрация участника и подтверждение учётной записи
+    description: Регистрация участника
   - name: Auth
-    description: Авторизация по одноразовому паролю
+    description: |
+      Авторизация по одноразовому паролю. Успешная проверка OTP
+      одновременно подтверждает владение e-mail.
   - name: Groups
     description: Создание групп и управление их составом
   - name: SectionApplications
@@ -37,9 +42,10 @@ paths:
       tags: [Registration]
       summary: Подать заявку на регистрацию участника
       description: |
-        Создаёт запись в `people` и неподтверждённую запись в `participants`
-        и отправляет на указанный e-mail письмо со ссылкой подтверждения,
-        содержащей одноразовый токен.
+        Создаёт запись в `people` и запись в `participants`. Отдельное
+        подтверждение e-mail не требуется: владение почтой подтверждается
+        неявно при первой успешной авторизации по OTP
+        (см. `/auth/otp/verify`).
       operationId: requestRegistration
       requestBody:
         required: true
@@ -48,8 +54,8 @@ paths:
             schema:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        "202":
-          description: Заявка принята, письмо подтверждения отправлено
+        "201":
+          description: Участник зарегистрирован
           content:
             application/json:
               schema:
@@ -67,40 +73,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /registration/confirm:
-    post:
-      tags: [Registration]
-      summary: Подтвердить регистрацию по токену из письма
-      description: |
-        Активирует запись участника по одноразовому токену подтверждения,
-        отправленному на e-mail.
-      operationId: confirmRegistration
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegistrationConfirmRequest"
-      responses:
-        "200":
-          description: Регистрация подтверждена
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Participant"
-        "400":
-          description: Некорректный или просроченный токен
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Заявка на регистрацию не найдена
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   # ------------------------------------------------------------------ #
   # 2. Авторизация (OTP)                                               #
   # ------------------------------------------------------------------ #
@@ -109,8 +81,10 @@ paths:
       tags: [Auth]
       summary: Запросить одноразовый пароль для входа
       description: |
-        Генерирует одноразовый пароль и отправляет на e-mail подтверждённого участника.
-        OTP действует ограниченное время.
+        Генерирует одноразовый пароль и отправляет на e-mail участника.
+        OTP действует ограниченное время. Успешная проверка этого OTP
+        в `/auth/otp/verify` одновременно подтверждает владение e-mail
+        (отдельный шаг подтверждения регистрации не используется).
       operationId: requestOtp
       requestBody:
         required: true
@@ -137,8 +111,9 @@ paths:
       tags: [Auth]
       summary: Войти в систему с помощью OTP
       description: |
-        Проверяет OTP и возвращает токен доступа
-        (Bearer/JWT) для дальнейших авторизованных запросов.
+        Проверяет OTP и возвращает токен доступа (Bearer/JWT) для
+        дальнейших авторизованных запросов. Каждая успешная проверка OTP
+        также подтверждает, что участник владеет указанным e-mail.
       operationId: verifyOtp
       requestBody:
         required: true
@@ -168,10 +143,12 @@ paths:
       tags: [Groups]
       summary: Создать группу и стать её лидером
       description: |
-        Создаёт запись в `groups` (с `section_id`, `name`, `member_count = 1`,
-        `registration_time = NOW()`), добавляет создателя в `group_participants`
-        и выставляет `participants.is_group_leader = true` для текущего
-        участника.
+        Создаёт запись в `groups` без привязки к секции (`section_id = NULL`,
+        `registration_time = NULL`, `name`, `member_count = 1`), добавляет
+        создателя в `group_participants` и выставляет
+        `participants.is_group_leader = true` для текущего участника.
+        Секция и время регистрации в секции выставляются позже —
+        в момент подачи заявки на участие (см. `/section-applications`).
       operationId: createGroup
       security:
         - bearerAuth: []
@@ -196,8 +173,6 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Требуется авторизация
-        "404":
-          description: Секция не найдена
         "409":
           description: Участник уже состоит в другой группе
           content:
@@ -320,11 +295,13 @@ paths:
       description: |
         Лидер группы подаёт заявку на участие группы в секции конкретного
         мероприятия. Связь «секция ↔ мероприятие» определяется таблицей
-        `event_sections`; группа уже привязана к секции через `groups.section_id`,
-        поэтому в заявке достаточно указать `groupId` и `eventId`.
+        `event_sections`. Группа создаётся без секции, поэтому в заявке
+        обязательно указываются `group_id`, `section_id` и `event_id`.
 
-        Заявка создаётся в статусе `PENDING` и ожидает подтверждения
-        организатором мероприятия.
+        В момент создания заявки у группы выставляются
+        `groups.section_id = section_id` и `groups.registration_time = NOW()`
+        (если они ещё не были установлены). Заявка создаётся в статусе
+        `PENDING` и ожидает подтверждения организатором мероприятия.
       operationId: createSectionApplication
       security:
         - bearerAuth: []
@@ -355,9 +332,11 @@ paths:
           description: Группа, секция или мероприятие не найдены
         "409":
           description: |
-            У группы уже есть заявка на эту секцию мероприятия,
-            либо секция не входит в состав указанного мероприятия
-            (нет связи в `event_sections`).
+            У группы уже есть заявка на эту секцию мероприятия;
+            секция не входит в состав указанного мероприятия
+            (нет связи в `event_sections`); либо у группы уже
+            установлена другая секция (`groups.section_id`),
+            отличная от указанной в запросе.
           content:
             application/json:
               schema:
@@ -578,7 +557,8 @@ components:
           enum: [PENDING_CONFIRMATION, ACTIVE]
           description: |
             API-уровневый статус: `PENDING_CONFIRMATION` пока e-mail не
-            подтверждён, `ACTIVE` после подтверждения.
+            подтверждён (т.е. участник ещё ни разу не авторизовался
+            по OTP), `ACTIVE` после первой успешной авторизации по OTP.
         group_id:
           type: integer
           minimum: 1
@@ -594,7 +574,6 @@ components:
         - last_name
         - faculty_id
         - course_id
-        - section_id
       properties:
         email:
           type: string
@@ -630,10 +609,6 @@ components:
           minimum: 1
           nullable: true
           description: FK на `teachers.id`
-        section_id:
-          type: integer
-          minimum: 1
-          description: FK на `sections.id`
         textbook_level_id:
           type: integer
           minimum: 1
@@ -669,18 +644,13 @@ components:
         status:
           type: string
           enum: [PENDING_CONFIRMATION]
+          description: |
+            Участник создан, но e-mail ещё не подтверждён. Подтверждение
+            произойдёт автоматически при первой успешной авторизации
+            по OTP (`/auth/otp/verify`).
         message:
           type: string
-          example: "На указанный e-mail отправлено письмо подтверждения"
-
-    RegistrationConfirmRequest:
-      type: object
-      required: [token]
-      properties:
-        token:
-          type: string
-          description: Одноразовый токен из письма подтверждения
-          minLength: 16
+          example: "Регистрация принята. Для входа запросите OTP на указанный e-mail."
 
     # ---------- Auth ------------------------------------------------- #
     OtpRequest:
@@ -734,17 +704,13 @@ components:
     # ---------- Groups ---------------------------------------------- #
     GroupCreateRequest:
       type: object
-      required: [name, section_id]
+      required: [name]
       properties:
         name:
           type: string
           minLength: 2
           maxLength: 100
           example: "Группа А"
-        section_id:
-          type: integer
-          minimum: 1
-          description: FK на `sections.id` — секция, в рамках которой создаётся группа
 
     GroupParticipantAddRequest:
       type: object
@@ -781,6 +747,11 @@ components:
         section_id:
           type: integer
           minimum: 1
+          nullable: true
+          description: |
+            Секция, в которой группа выступает. `null` до момента подачи
+            заявки на участие в секции; устанавливается при создании
+            заявки в `/section-applications`.
         name:
           type: string
           maxLength: 100
@@ -790,7 +761,10 @@ components:
         registration_time:
           type: string
           format: date-time
-          description: Колонка `groups.registration_time`
+          nullable: true
+          description: |
+            Колонка `groups.registration_time`. `null` до подачи заявки
+            на участие в секции; выставляется в момент создания заявки.
         leader_id:
           type: integer
           minimum: 1
@@ -809,19 +783,25 @@ components:
     # ---------- Section Applications -------------------------------- #
     SectionApplicationCreateRequest:
       type: object
-      required: [group_id, event_id]
+      required: [group_id, section_id, event_id]
       properties:
         group_id:
           type: integer
           minimum: 1
           description: FK на `groups.id`
-        event_id:
+        section_id:
           type: integer
           minimum: 1
           description: |
-            FK на `events.id`. Секция определяется автоматически из
-            `groups.section_id`; пара `(section_id, event_id)` должна
-            присутствовать в `event_sections`.
+            FK на `sections.id` — секция, в которой группа хочет
+            участвовать. При создании заявки это значение выставляется
+            в `groups.section_id` (если ранее не было установлено).
+            Пара `(section_id, event_id)` должна присутствовать
+            в `event_sections`.
+        event_id:
+          type: integer
+          minimum: 1
+          description: FK на `events.id`.
 
     SectionApplicationRejectRequest:
       type: object
