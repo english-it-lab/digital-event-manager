@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Jury
+from app.models import Jury, JuryScore, Participant, Person, SectionJury
 from app.schemas import JuryCreate, JuryUpdate
 
 
@@ -67,3 +67,32 @@ class JuryRepository:
     async def delete_jury(self, jury: Jury) -> None:
         await self._session.delete(jury)
         await self._session.flush()
+
+    async def get_jury_progress(self, jury_id: int) -> Sequence[dict]:
+        """
+        Get list of participants for the jury's section with grading status.
+        """
+        subquery_sections = select(SectionJury.section_id).where(SectionJury.jury_id == jury_id).scalar_subquery()
+        stmt = (
+            select(
+                Participant.id.label("participant_id"),
+                Person.first_name,
+                Person.last_name,
+                Participant.presentation_topic,
+                case((JuryScore.id.is_not(None), True), else_=False).label("is_graded"),
+                (
+                    func.coalesce(JuryScore.organization_score, 0)
+                    + func.coalesce(JuryScore.content, 0)
+                    + func.coalesce(JuryScore.visuals, 0)
+                    + func.coalesce(JuryScore.mechanics, 0)
+                    + func.coalesce(JuryScore.delivery, 0)
+                ).label("current_score"),
+            )
+            .join(Person, Participant.person_id == Person.id)
+            .outerjoin(JuryScore, and_(JuryScore.participant_id == Participant.id, JuryScore.jury_id == jury_id))
+            .where(Participant.section_id.in_(subquery_sections))
+            .order_by(Person.last_name)
+        )
+
+        result = await self._session.execute(stmt)
+        return result.all()
