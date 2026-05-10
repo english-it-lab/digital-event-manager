@@ -201,36 +201,57 @@ paths:
         "404":
           description: Группа не найдена
 
-  /groups/{groupId}/participants:
+  # ------------------------------------------------------------------ #
+  # 4. Приглашения в группу (токены)                                   #
+  # ------------------------------------------------------------------ #
+  /groups/{groupId}/invite-token:
     post:
       tags: [Groups]
-      summary: Добавить участника в группу (только лидер)
+      summary: Создать токен приглашения в группу (только лидер)
       description: |
-        Лидер группы добавляет в свою группу подтверждённого участника
-        (создаётся запись в `group_participants`, инкрементируется
-        `groups.member_count`). Если по группе уже есть подтверждённая
-        организатором заявка на участие в секции (см. флоу
-        SectionApplications), изменение состава запрещено.
-      operationId: addGroupParticipant
+        Лидер группы создаёт одноразовый токен приглашения. Токен позволяет
+        другому участнику присоединиться к группе. Токен действителен
+        ограниченное время.
+      operationId: createInviteToken
       security:
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/GroupId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GroupParticipantAddRequest"
+      responses:
+        "201":
+          description: Токен создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteTokenResponse"
+        "401":
+          description: Требуется авторизация
+        "403":
+          description: Только лидер группы может создавать токены приглашения
+        "404":
+          description: Группа не найдена
+
+  /groups/join/{token}:
+    post:
+      tags: [Groups]
+      summary: Вступить в группу по токену приглашения
+      description: |
+        Участник использует токен приглашения для вступления в группу.
+        После успешного вступления участник добавляется в `group_participants`.
+      operationId: joinGroupByToken
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/InviteToken"
       responses:
         "200":
-          description: Участник добавлен
+          description: Успешное вступление в группу
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
         "400":
-          description: Некорректные данные
+          description: Некорректный или просроченный токен
           content:
             application/json:
               schema:
@@ -238,55 +259,16 @@ paths:
         "401":
           description: Требуется авторизация
         "403":
-          description: Только лидер группы может добавлять участников
+          description: Участник уже состоит в другой группе
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: Группа или участник не найдены
-        "409":
-          description: |
-            Участник уже состоит в другой группе либо состав группы
-            зафиксирован подтверждённой заявкой на участие в секции.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /groups/{groupId}/participants/{participantId}:
-    delete:
-      tags: [Groups]
-      summary: Удалить участника из группы (только лидер)
-      description: |
-        Удаляет запись из `group_participants` и декрементирует
-        `groups.member_count`. Запрещено, если заявка группы на секцию
-        уже подтверждена.
-      operationId: removeGroupParticipant
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/GroupId"
-        - in: path
-          name: participantId
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        "204":
-          description: Участник удалён
-        "401":
-          description: Требуется авторизация
-        "403":
-          description: Только лидер может удалять участников
-        "404":
-          description: Группа или участник не найдены
-        "409":
-          description: Состав группы зафиксирован подтверждённой заявкой
+          description: Группа не найдена или токен недействителен
 
   # ------------------------------------------------------------------ #
-  # 4. Заявки группы на секцию мероприятия                             #
+  # 5. Заявки группы на секцию мероприятия                             #
   # ------------------------------------------------------------------ #
   /section-applications:
     post:
@@ -443,6 +425,12 @@ components:
       schema:
         type: integer
         minimum: 1
+    InviteToken:
+      in: path
+      name: token
+      required: true
+      schema:
+        type: string
     ApplicationId:
       in: path
       name: applicationId
@@ -727,6 +715,18 @@ components:
       oneOf:
         - required: [participant_id]
         - required: [email]
+
+    InviteTokenResponse:
+      type: object
+      required: [token, expired_at]
+      properties:
+        token:
+          type: string
+          description: Одноразовый токен приглашения
+        expired_at:
+          type: string
+          format: date-time
+          description: Время жизни токена
 
     Group:
       type: object
