@@ -9,14 +9,14 @@ servers:
     description: Server
 
 tags:
-  - name: Draw
+  - name: Notifications
     description: Уведомления о жеребьевке
 
 paths:
   /notifications/draw/results:
     post:
       tags:
-        - Draw
+        - Notifications
       summary: Отправить уведомления по результатам жеребьевки мероприятия
       description: |
         Принимает идентификатор мероприятия.
