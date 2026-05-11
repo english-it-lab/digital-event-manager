@@ -6,14 +6,15 @@ from app.core.config import settings
 
 
 def send_email(to: str, subject: str, body: str):
-    smtp_server = settings.smtp_server  # "smtp.yandex.ru" или smtp.gmail.com
-    smtp_port = 587  # 587 для TLS, 465 для SSL, 25 без шифрования
-    login = settings.email_login
-    password = settings.email_password
+    smtp_host = settings.smtp_host
+    smtp_port = settings.smtp_port
+    smtp_user = settings.smtp_user
+    smtp_password = settings.smtp_password
+    from_email = settings.smtp_from_email
 
     # Создание сообщения
     msg = MIMEMultipart()
-    msg["From"] = login
+    msg["From"] = from_email
     msg["To"] = to
     msg["Subject"] = subject
 
@@ -22,9 +23,9 @@ def send_email(to: str, subject: str, body: str):
 
     # Отправка
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()  # Включаем шифрование TLS
-            server.login(login, password)
+            server.login(smtp_user, smtp_password)
             server.send_message(msg)
     except Exception as e:
         print(f"Ошибка при отправке: {e}")

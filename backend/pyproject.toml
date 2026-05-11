@@ -8,7 +8,6 @@ dependencies = [
     "aiofiles",
     "alembic",
     "asyncpg",
-    "aiosmtplib",
     "email-validator",
     "fastapi",
     "pydantic-settings",

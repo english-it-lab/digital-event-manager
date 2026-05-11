@@ -21,7 +21,6 @@ from app.repositories.technical_requirement import (
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.services.email_confirmation import EmailConfirmationService
-from app.services.email_sender import EmailSenderService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.participant_ranking import ParticipantRankingService
@@ -128,5 +127,4 @@ def get_section_jury_service(
 
 
 def get_email_confirmation_service() -> EmailConfirmationService:
-    email_sender = EmailSenderService()
-    return EmailConfirmationService(email_sender=email_sender)
+    return EmailConfirmationService()

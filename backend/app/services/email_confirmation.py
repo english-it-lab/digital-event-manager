@@ -3,7 +3,7 @@ import hmac
 from datetime import datetime
 
 from app.core.config import settings
-from app.services.email_sender import EmailSenderService
+from app.services.send_mails import send_email
 
 
 class EmailConfirmationService:
@@ -11,9 +11,6 @@ class EmailConfirmationService:
 
     CODE_LENGTH = 6
     TIME_WINDOW_MINUTES = 2  # Time window in minutes
-
-    def __init__(self, email_sender: EmailSenderService | None = None):
-        self.email_sender = email_sender or EmailSenderService()
 
     def generate_code(self, email: str) -> str:
         """
@@ -52,8 +49,22 @@ class EmailConfirmationService:
             Tuple of (code, success_status)
         """
         code = self.generate_code(email)
-        success = await self.email_sender.send_confirmation_code(email, code)
-        return code, success
+        subject = "Your Confirmation Code"
+        body = f"""
+Hello,
+
+Your confirmation code is: {code}
+
+If you didn't request this code, please ignore this email.
+"""
+        # send_email is synchronous, so we need to handle it appropriately
+        # For now, we'll call it directly and catch any exceptions
+        try:
+            send_email(email, subject, body)
+            return code, True
+        except Exception as e:
+            print(f"Failed to send email to {email}: {e}")
+            return code, False
 
     def verify_code(self, email: str, code: str) -> bool:
         """
