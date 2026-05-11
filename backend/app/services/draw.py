@@ -1,4 +1,3 @@
-# app/services/draw.py
 from fastapi import HTTPException
 from app.repositories.topic import TopicRepository
 from app.repositories.group import GroupRepository
