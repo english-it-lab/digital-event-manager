@@ -1,7 +1,6 @@
-from unittest.mock import patch
-
 import pytest
-from app.core.email import send_email
+from unittest.mock import patch
+from app.services.send_mails import send_email
 
 from app.core.config import settings
 
@@ -9,10 +8,10 @@ from app.core.config import settings
 # Фикстура для мока настроек
 @pytest.fixture
 def mock_settings():
-    with patch("app.core.email.settings") as mock:
-        mock.smtp_server = "smtp.yandex.ru"
-        mock.email_login = "login@yandex.ru"
-        mock.email_password = "pass"
+    with patch("app.services.send_mails.settings") as mock:
+        mock.smtp_server = "smtp.example.com"
+        mock.email_login = "test@example.com"
+        mock.email_password = "test-password"
         yield mock
 
 
