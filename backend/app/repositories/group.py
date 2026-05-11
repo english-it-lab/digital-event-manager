@@ -1,9 +1,12 @@
 from collections.abc import Sequence
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models import Group
 from app.schemas import GroupCreate, GroupUpdate
-from datetime import datetime
+
 
 class GroupRepository:
     def __init__(self, session: AsyncSession) -> None:
@@ -35,10 +38,10 @@ class GroupRepository:
         group = await self.get_group_by_id(group_id)
         if not group:
             return None
-        
+
         for key, value in data.model_dump(exclude_unset=True).items():
             setattr(group, key, value)
-        
+
         await self._session.commit()
         await self._session.refresh(group)
         return group

@@ -9,8 +9,7 @@ from app.adapters.api.v1 import (
     technical_requirements,
     universities,
     sections,
-    groups
-    
+    groups,
 )
 from app.adapters.api.v1.draw import DrawApiImpl
 from app.adapters.api.v1.draw_results import DrawResultsApiImpl

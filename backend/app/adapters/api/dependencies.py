@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
 from app.repositories.event import EventRepository
+from app.repositories.group import GroupRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
 from app.repositories.organizer import OrganizerRepository
@@ -18,9 +19,9 @@ from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
     TechnicalRequirementRepository,
 )
-from app.repositories.group import GroupRepository
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.services.group import GroupService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.participant_ranking import ParticipantRankingService
@@ -30,7 +31,6 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
-from app.services.group import GroupService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -126,10 +126,12 @@ def get_section_jury_service(
         jury_repository=jury_repository,
     )
 
+
 def get_section_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> SectionRepository:
     return SectionRepository(session)
+
 
 def get_group_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -142,4 +144,3 @@ def get_group_service(
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
-
