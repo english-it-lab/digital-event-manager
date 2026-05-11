@@ -1,8 +1,10 @@
+import random
+
 from fastapi import HTTPException
-from app.repositories.topic import TopicRepository
+
 from app.repositories.group import GroupRepository
 from app.repositories.group_topic import GroupTopicRepository
-import random
+from app.repositories.topic import TopicRepository
 
 
 class DrawService:

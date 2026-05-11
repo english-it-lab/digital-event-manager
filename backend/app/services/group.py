@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+
 from fastapi import HTTPException, status
 
 from app.models import Group

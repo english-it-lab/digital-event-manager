@@ -1,9 +1,11 @@
 from collections.abc import Sequence
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models import Group
 from app.schemas import GroupCreate, GroupUpdate
-from datetime import datetime
 
 
 class GroupRepository:

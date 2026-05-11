@@ -1,5 +1,7 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, status
+
 from app.adapters.api.dependencies import get_group_service
 from app.schemas import GroupCreate, GroupRead, GroupUpdate
 from app.services.group import GroupService
