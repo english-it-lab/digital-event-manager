@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     db_name: str = Field(default="digital_events")
     db_echo: bool = Field(default=False)
 
+    # Email confirmation
     email_confirmation_secret_key: str = Field(default="test-email-confirmation-secret")
 
     # SMTP configuration

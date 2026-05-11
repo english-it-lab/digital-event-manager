@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated, Literal
 
 from annotated_types import MaxLen
@@ -370,12 +370,12 @@ class ParticipantScoreSummary(BaseModel):
         return round(total_sum / count, 2) if count > 0 else None
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     ASC = "asc"
     DESC = "desc"
 
 
-class ParticipantRankingSortField(str, Enum):
+class ParticipantRankingSortField(StrEnum):
     TOTAL_SCORE = "total_score"
     LAST_NAME = "last_name"
     FIRST_NAME = "first_name"
