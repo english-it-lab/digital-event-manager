@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
+
+from app.enums.group import GroupStatus
 
 
 class ORMModelMixin:
@@ -185,16 +187,34 @@ class TopicRead(ORMModelMixin, TopicBase):
 class GroupBase(BaseModel):
     section_id: int | None = None
     name: str | None = None
+    status: GroupStatus = GroupStatus.FORMING
     member_count: int | None = None
     registration_time: datetime | None = None
 
 
-class GroupCreate(GroupBase):
-    pass
+class GroupCreate(BaseModel):
+    section_id: int
+    name: str
+
+
+class GroupUpdate(BaseModel):
+    name: str | None = None
 
 
 class GroupRead(ORMModelMixin, GroupBase):
     id: int
+
+
+class GroupFilter(BaseModel):
+    section_id: int = Field(
+        default=None,
+        gt=0,
+        alias="section-id",
+    )
+    status: GroupStatus | None = Field(
+        default=None,
+        alias="group-status"
+    )
 
 
 class GroupTopicBase(BaseModel):
@@ -369,12 +389,12 @@ class ParticipantScoreSummary(BaseModel):
         return round(total_sum / count, 2) if count > 0 else None
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     ASC = "asc"
     DESC = "desc"
 
 
-class ParticipantRankingSortField(str, Enum):
+class ParticipantRankingSortField(StrEnum):
     TOTAL_SCORE = "total_score"
     LAST_NAME = "last_name"
     FIRST_NAME = "first_name"
@@ -561,6 +581,7 @@ __all__ = [
     "GroupBase",
     "GroupCreate",
     "GroupRead",
+    "GroupFilter",
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
