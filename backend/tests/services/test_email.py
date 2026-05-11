@@ -1,8 +1,9 @@
-import pytest
 from unittest.mock import patch
-from app.services.send_mails import send_email
+
+import pytest
 
 from app.core.config import settings
+from app.services.send_mails import send_email
 
 
 # Фикстура для мока настроек
