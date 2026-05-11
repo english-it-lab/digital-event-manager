@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from app.core.config import settings
 from app.services.send_mails import send_email
