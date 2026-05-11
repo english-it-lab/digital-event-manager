@@ -21,10 +21,11 @@ class Settings(BaseSettings):
     db_echo: bool = Field(default=False)
 
     # for mail
-
     email_password: str  # app password!
     email_login: str
     smtp_server: str
+
+    jwt_secret_key: str = Field(default="test-secret-key")
 
     @property
     def database_url(self) -> str:
