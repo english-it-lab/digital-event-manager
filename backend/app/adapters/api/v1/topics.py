@@ -1,11 +1,10 @@
+from app.db.session import get_db_session
+from app.repositories.topic import TopicRepository
+from app.services.topic import TopicService
 from openapi_server.apis.topics_api_base import BaseTopicsApi
 from openapi_server.models.topic import Topic
 from openapi_server.models.topic_create import TopicCreate
 from openapi_server.models.topic_update import TopicUpdate
-
-from app.db.session import get_db_session
-from app.repositories.topic import TopicRepository
-from app.services.topic import TopicService
 
 
 class TopicsApiImpl(BaseTopicsApi):

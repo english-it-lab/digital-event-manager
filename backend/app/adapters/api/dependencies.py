@@ -125,7 +125,6 @@ def get_section_jury_service(
         jury_repository=jury_repository,
     )
 
-def get_jwt_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> JwtService:
+
+def get_jwt_service() -> JwtService:
     return JwtService()
