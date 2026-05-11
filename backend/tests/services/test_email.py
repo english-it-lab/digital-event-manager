@@ -1,7 +1,20 @@
+import pytest
 from unittest.mock import patch
 
 from app.core.config import settings
 from app.services.send_mails import send_email
+
+
+# Фикстура для мока настроек
+@pytest.fixture
+def mock_settings():
+    with patch("app.core.config.settings") as mock:
+        mock.smtp_host = "smtp.example.com"
+        mock.smtp_port = 587
+        mock.smtp_user = "test@example.com"
+        mock.smtp_password = "test-password"
+        mock.smtp_from_email = "from@example.com"
+        yield mock
 
 
 # TC-01: Успешная отправка
