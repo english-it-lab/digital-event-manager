@@ -26,7 +26,7 @@ jobs:
 
       - name: Run linter
         working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
-        run: uvx ruff check --output-format=github .
+        run: uvx ruff check --verbose .
 
   resolve-env:
     if: ${{ github.event_name != 'pull_request' }}
