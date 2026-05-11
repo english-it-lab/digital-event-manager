@@ -503,6 +503,7 @@ class PosterContentUpdate(BaseModel):
     words_amount: int | None = None
     images_amount: int | None = None
 
+
 class GroupBase(BaseModel):
     section_id: int | None = None
     name: str | None = None

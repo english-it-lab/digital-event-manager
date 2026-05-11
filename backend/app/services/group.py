@@ -37,8 +37,9 @@ class GroupService:
         if data.section_id:
             section = await self._section_repository.get_section_by_id(data.section_id)
             if section is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                    detail=f"Section {data.section_id} not found")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Section {data.section_id} not found"
+                )
 
         return await self._repository.create_group(data)
 
@@ -50,5 +51,4 @@ class GroupService:
 
     async def delete_group(self, group_id: int) -> None:
         if not await self._repository.delete_group(group_id):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Group {group_id} not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {group_id} not found")

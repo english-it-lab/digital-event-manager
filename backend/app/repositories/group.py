@@ -5,6 +5,7 @@ from app.models import Group
 from app.schemas import GroupCreate, GroupUpdate
 from datetime import datetime
 
+
 class GroupRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session

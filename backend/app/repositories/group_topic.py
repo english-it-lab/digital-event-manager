@@ -23,9 +23,7 @@ class GroupTopicRepository:
         """Remove all draw results for a section."""
         # Delete group_topics where group belongs to the section
         stmt = delete(GroupTopic).where(
-            GroupTopic.group_id.in_(
-                select(Group.id).where(Group.section_id == section_id)
-            )
+            GroupTopic.group_id.in_(select(Group.id).where(Group.section_id == section_id))
         )
         await self._session.execute(stmt)
         await self._session.commit()

@@ -114,11 +114,11 @@ def get_topic_service(
     topic_repository = TopicRepository(session)
     return TopicService(topic_repository)
 
-def get_draw_service(
-session: Annotated[AsyncSession, Depends(get_session)]
-) -> DrawService:
+
+def get_draw_service(session: Annotated[AsyncSession, Depends(get_session)]) -> DrawService:
     topic_service = get_topic_service(session)
     return DrawService(topic_service)
+
 
 def get_section_jury_service(
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -132,10 +132,12 @@ def get_section_jury_service(
         jury_repository=jury_repository,
     )
 
+
 def get_section_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> SectionRepository:
     return SectionRepository(session)
+
 
 def get_group_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -148,4 +150,3 @@ def get_group_service(
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
-

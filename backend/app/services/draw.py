@@ -5,6 +5,7 @@ from app.repositories.group_topic import GroupTopicRepository
 import random
 from pprint import pprint
 
+
 class DrawService:
     """Service for draw logic."""
 
@@ -21,7 +22,6 @@ class DrawService:
     async def run_draw(self, section_id: int) -> dict:
         """Run draw for a section."""
         topics = await self.topic_repo.list_by_section(section_id)
-
 
         groups = await self.group_repo.list_by_section(section_id)
 
@@ -41,25 +41,17 @@ class DrawService:
         if num_topics <= num_groups:
             for group in groups:
                 if topic_idx < num_topics:
-                    results.append({
-                        "group_id": group.id,
-                        "group_name": group.name,
-                        "topics": [{
-                            "topic_id": shuffled[topic_idx].id,
-                            "topic_name": shuffled[topic_idx].name
-                        }]
-                    })
+                    results.append(
+                        {
+                            "group_id": group.id,
+                            "group_name": group.name,
+                            "topics": [{"topic_id": shuffled[topic_idx].id, "topic_name": shuffled[topic_idx].name}],
+                        }
+                    )
                     topic_idx += 1
                 else:
-                    results.append({
-                        "group_id": group.id,
-                        "group_name": group.name,
-                        "topics": []
-                    })
-                    empty_groups.append({
-                        "group_id": group.id,
-                        "group_name": group.name
-                    })
+                    results.append({"group_id": group.id, "group_name": group.name, "topics": []})
+                    empty_groups.append({"group_id": group.id, "group_name": group.name})
         else:
             base = num_topics // num_groups
             remainder = num_topics % num_groups
@@ -68,18 +60,11 @@ class DrawService:
                 topics_count = base + (1 if i < remainder else 0)
                 group_topics = []
                 for _ in range(topics_count):
-                    group_topics.append({
-                        "topic_id": shuffled[topic_idx].id,
-                        "topic_name": shuffled[topic_idx].name
-                    })
+                    group_topics.append({"topic_id": shuffled[topic_idx].id, "topic_name": shuffled[topic_idx].name})
                     topic_idx += 1
-                results.append({
-                    "group_id": group.id,
-                    "group_name": group.name,
-                    "topics": group_topics
-                })
+                results.append({"group_id": group.id, "group_name": group.name, "topics": group_topics})
 
-        await self.group_topic_repo.clear_section(section_id) # Чистим предыдущую жеребьевку
+        await self.group_topic_repo.clear_section(section_id)  # Чистим предыдущую жеребьевку
         for result in results:
             for topic in result["topics"]:
                 await self.group_topic_repo.create(result["group_id"], topic["topic_id"])
@@ -94,5 +79,5 @@ class DrawService:
             "results": results,
             "empty_groups": empty_groups,
             "total_topics": num_topics,
-            "total_groups": num_groups
+            "total_groups": num_groups,
         }
