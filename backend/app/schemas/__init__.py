@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
@@ -182,21 +182,6 @@ class TopicRead(ORMModelMixin, TopicBase):
     id: int
 
 
-class GroupBase(BaseModel):
-    section_id: int | None = None
-    name: str | None = None
-    member_count: int | None = None
-    registration_time: datetime | None = None
-
-
-class GroupCreate(GroupBase):
-    pass
-
-
-class GroupRead(ORMModelMixin, GroupBase):
-    id: int
-
-
 class GroupTopicBase(BaseModel):
     group_id: int
     topic_id: int | None = None
@@ -369,12 +354,12 @@ class ParticipantScoreSummary(BaseModel):
         return round(total_sum / count, 2) if count > 0 else None
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     ASC = "asc"
     DESC = "desc"
 
 
-class ParticipantRankingSortField(str, Enum):
+class ParticipantRankingSortField(StrEnum):
     TOTAL_SCORE = "total_score"
     LAST_NAME = "last_name"
     FIRST_NAME = "first_name"
@@ -517,6 +502,27 @@ class PosterContentUpdate(BaseModel):
     technical_requirements_id: int | None = None
     words_amount: int | None = None
     images_amount: int | None = None
+
+
+class GroupBase(BaseModel):
+    section_id: int | None = None
+    name: str | None = None
+    member_count: int | None = None
+
+
+class GroupCreate(GroupBase):
+    pass
+
+
+class GroupUpdate(BaseModel):
+    section_id: int | None = None
+    name: str | None = None
+    member_count: int | None = None
+
+
+class GroupRead(ORMModelMixin, GroupBase):
+    id: int
+    registration_time: datetime
 
 
 __all__ = [
