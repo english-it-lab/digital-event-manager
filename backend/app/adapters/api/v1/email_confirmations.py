@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.adapters.api.dependencies import get_email_confirmation_service
+from app.adapters.api.utils import mask_email
 from app.schemas import (
     EmailConfirmationRequest,
     EmailConfirmationResponse,
@@ -36,8 +37,7 @@ async def generate_email_code(
         logger.warning(f"Failed to send email to {request.email}")
 
     # Mask email for response (e.g., u***@example.com)
-    at_index = request.email.index("@")
-    email_masked = f"{request.email[:1]}***{request.email[at_index:]}"
+    email_masked = mask_email(request.email)
 
     return EmailConfirmationResponse(
         message="Confirmation code sent to email",
