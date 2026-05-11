@@ -48,16 +48,13 @@ async def create_group(
 
         case "SECTION_NOT_FOUND":
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Section with id {payload.section_id} not found"
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"Section with id {payload.section_id} not found"
             )
 
 
 @router.patch("/", response_model=GroupRead)
 async def update_group(
-    group_id: int,
-    payload: GroupUpdate,
-    service: Annotated[GroupService, Depends(get_group_service)]
+    group_id: int, payload: GroupUpdate, service: Annotated[GroupService, Depends(get_group_service)]
 ) -> GroupRead:
     group = await service.update_group(group_id, payload)
 
@@ -96,15 +93,11 @@ async def submit_group(
             return GroupRead.model_validate(group)
 
         case "NOT_FOUND":
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Group with id {group_id} not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="Group status must be FORMING"
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be FORMING"
             )
 
 
@@ -120,15 +113,11 @@ async def approve_group(
             return GroupRead.model_validate(group)
 
         case "NOT_FOUND":
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Group with id {group_id} not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="Group status must be PENDING"
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be PENDING"
             )
 
 
@@ -144,13 +133,9 @@ async def reject_group(
             return GroupRead.model_validate(group)
 
         case "NOT_FOUND":
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Group with id {group_id} not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="Group status must be PENDING"
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be PENDING"
             )

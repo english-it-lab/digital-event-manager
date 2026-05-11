@@ -126,6 +126,7 @@ def get_section_jury_service(
         jury_repository=jury_repository,
     )
 
+
 def get_group_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> GroupService:

@@ -211,10 +211,7 @@ class GroupFilter(BaseModel):
         gt=0,
         alias="section-id",
     )
-    status: GroupStatus | None = Field(
-        default=None,
-        alias="group-status"
-    )
+    status: GroupStatus | None = Field(default=None, alias="group-status")
 
 
 class GroupTopicBase(BaseModel):

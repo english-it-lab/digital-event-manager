@@ -10,10 +10,10 @@ from app.schemas import GroupCreate, GroupFilter, GroupUpdate
 
 class GroupService:
     def __init__(
-            self,
-            repository: GroupRepository,
-            section_repository: SectionRepository,
-        ) -> None:
+        self,
+        repository: GroupRepository,
+        section_repository: SectionRepository,
+    ) -> None:
         self._repository = repository
         self._section_repository = section_repository
 
@@ -72,7 +72,6 @@ class GroupService:
         group = await self._repository.update_status(group, GroupStatus.APPROVED)
         return group
 
-
     async def reject_group(self, group_id: int) -> Group | Literal["NOT_FOUND", "TRANSITION_ERROR"]:
         group = await self._repository.get_group_by_id(group_id)
 
@@ -84,7 +83,6 @@ class GroupService:
 
         group = await self._repository.update_status(group, GroupStatus.REJECTED)
         return group
-
 
     async def _section_exists(self, section_id: int) -> bool:
         section = await self._section_repository.get_section_by_id(section_id)
