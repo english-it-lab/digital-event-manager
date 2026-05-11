@@ -86,4 +86,3 @@ class EmailConfirmationService:
 
         code = str(int(hmac_hash, 16))[-self.CODE_LENGTH :]
         return code
-

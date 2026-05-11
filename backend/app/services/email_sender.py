@@ -1,7 +1,7 @@
 import logging
+from email.message import EmailMessage
 
 import aiosmtplib
-from email.message import EmailMessage
 
 from app.core.config import settings
 
@@ -36,16 +36,11 @@ class EmailSenderService:
         """
         if not self._is_configured():
             logger.warning(
-                "SMTP credentials not configured. "
-                f"Code for {to_email}: {code} "
-                "(Configure SMTP in .env to send emails)"
+                f"SMTP credentials not configured. Code for {to_email}: {code} (Configure SMTP in .env to send emails)"
             )
             return False
 
-        logger.info(
-            f"Connecting to SMTP: {self.smtp_host}:{self.smtp_port}, "
-            f"user={self.smtp_user}"
-        )
+        logger.info(f"Connecting to SMTP: {self.smtp_host}:{self.smtp_port}, user={self.smtp_user}")
 
         # Create email message
         message = EmailMessage()
@@ -89,4 +84,3 @@ If you didn't request this code, please ignore this email.
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}: {e}", exc_info=True)
             return False
-
