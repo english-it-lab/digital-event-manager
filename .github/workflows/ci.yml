@@ -20,6 +20,10 @@ jobs:
         working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
         run: uvx ruff format . --check --diff
 
+      - name: Linter version
+        working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
+        run: uvx ruff version
+
       - name: Run linter
         working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
         run: uvx ruff check --output-format=github .
