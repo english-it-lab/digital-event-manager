@@ -35,10 +35,10 @@ class GroupRepository:
         group = await self.get_group_by_id(group_id)
         if not group:
             return None
-        
+
         for key, value in data.model_dump(exclude_unset=True).items():
             setattr(group, key, value)
-        
+
         await self._session.commit()
         await self._session.refresh(group)
         return group

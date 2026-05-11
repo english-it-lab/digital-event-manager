@@ -182,21 +182,6 @@ class TopicRead(ORMModelMixin, TopicBase):
     id: int
 
 
-class GroupBase(BaseModel):
-    section_id: int | None = None
-    name: str | None = None
-    member_count: int | None = None
-    registration_time: datetime | None = None
-
-
-class GroupCreate(GroupBase):
-    pass
-
-
-class GroupRead(ORMModelMixin, GroupBase):
-    id: int
-
-
 class GroupTopicBase(BaseModel):
     group_id: int
     topic_id: int | None = None
