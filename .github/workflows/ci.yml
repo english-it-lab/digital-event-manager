@@ -60,8 +60,8 @@ jobs:
               working-directory: ${{ vars.PROJECT_FOLDER }}/${{ vars.SERVICE_FOLDER }}
               run: |
                   pip install --only-binary=all \
-                    fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv pytest pytest-asyncio httpx \
-                    || pip install fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv pytest pytest-asyncio httpx
+                    fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv python-jose[cryptography] pytest pytest-asyncio httpx \
+                    || pip install fastapi sqlalchemy asyncpg alembic pydantic-settings python-dotenv python-jose[cryptography] pytest pytest-asyncio httpx
                   pip install --only-binary=httptools,uvloop,websockets "uvicorn[standard]" || pip install uvicorn  # Fallback to no extras
                   PYTHONPATH=. pytest tests/ -s -v --tb=short
 
