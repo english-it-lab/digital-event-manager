@@ -1,6 +1,4 @@
-import random
 from openapi_server.apis.draw_api_base import BaseDrawApi
-from fastapi import HTTPException
 from app.db.session import get_db_session
 from app.repositories.topic import TopicRepository
 from app.repositories.group import GroupRepository
