@@ -7,6 +7,8 @@ from typing import Annotated, Literal
 from annotated_types import MaxLen
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.enums.group import GroupStatus
+
 
 class ORMModelMixin:
     """Mixin that enables ORM mode for Pydantic models."""
@@ -186,16 +188,31 @@ class TopicRead(ORMModelMixin, TopicBase):
 class GroupBase(BaseModel):
     section_id: int | None = None
     name: str | None = None
+    status: GroupStatus = GroupStatus.FORMING
     member_count: int | None = None
     registration_time: datetime | None = None
 
 
-class GroupCreate(GroupBase):
-    pass
+class GroupCreate(BaseModel):
+    section_id: int
+    name: str
+
+
+class GroupUpdate(BaseModel):
+    name: str | None = None
 
 
 class GroupRead(ORMModelMixin, GroupBase):
     id: int
+
+
+class GroupFilter(BaseModel):
+    section_id: int = Field(
+        default=None,
+        gt=0,
+        alias="section-id",
+    )
+    status: GroupStatus | None = Field(default=None, alias="group-status")
 
 
 class GroupTopicBase(BaseModel):
@@ -589,6 +606,7 @@ __all__ = [
     "GroupBase",
     "GroupCreate",
     "GroupRead",
+    "GroupFilter",
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
