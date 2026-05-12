@@ -1,55 +1,69 @@
 from collections.abc import Sequence
-from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.enums.group import GroupStatus
 from app.models import Group
-from app.schemas import GroupCreate, GroupUpdate
+from app.schemas import GroupFilter, GroupUpdate
 
 
 class GroupRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def list_groups(self, skip: int = 0, limit: int = 100) -> Sequence[Group]:
-        stmt = select(Group).order_by(Group.id).offset(skip).limit(limit)
-        result = await self._session.execute(stmt)
-        return result.scalars().all()
+    async def list_groups(self, filters: GroupFilter) -> Sequence[Group]:
+        stmt = select(Group)
 
-    async def list_by_section(self, section_id: int) -> Sequence[Group]:
-        stmt = select(Group).where(Group.section_id == section_id)
+        filter_dict = filters.model_dump(exclude_unset=True)
+
+        for field, value in filter_dict.items():
+            if hasattr(Group, field):
+                column = getattr(Group, field)
+                stmt = stmt.where(column.is_(None)) if value is None else stmt.where(column == value)
+
+        stmt = stmt.order_by(Group.id)
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
     async def get_group_by_id(self, group_id: int) -> Group | None:
         stmt = select(Group).where(Group.id == group_id)
+
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_group(self, data: GroupCreate) -> Group:
-        group = Group(**data.model_dump(), registration_time=datetime.now())
+    async def create_group(self, section_id: int, name: str) -> Group:
+        group = Group(
+            section_id=section_id,
+            name=name,
+            status=GroupStatus.FORMING,
+            member_count=0,
+        )
+
         self._session.add(group)
-        await self._session.commit()
+
+        await self._session.flush()
         await self._session.refresh(group)
         return group
 
-    async def update_group(self, group_id: int, data: GroupUpdate) -> Group | None:
-        group = await self.get_group_by_id(group_id)
-        if not group:
-            return None
+    async def update_group(self, group: Group, data: GroupUpdate) -> Group:
+        update_data = data.model_dump(exclude_unset=True)
 
-        for key, value in data.model_dump(exclude_unset=True).items():
-            setattr(group, key, value)
+        for field, value in update_data.items():
+            setattr(group, field, value)
 
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(group)
         return group
 
-    async def delete_group(self, group_id: int) -> bool:
-        group = await self.get_group_by_id(group_id)
-        if not group:
-            return False
+    async def delete_group(self, group: Group) -> None:
         await self._session.delete(group)
-        await self._session.commit()
-        return True
+        await self._session.flush()
+
+    async def update_status(self, group: Group, status: GroupStatus) -> Group:
+        group.status = status
+
+        await self._session.flush()
+        await self._session.refresh(group)
+
+        return group

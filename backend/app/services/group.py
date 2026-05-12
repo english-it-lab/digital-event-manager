@@ -1,16 +1,14 @@
 from collections.abc import Sequence
+from typing import Literal
 
-from fastapi import HTTPException, status
-
+from app.enums.group import GroupStatus
 from app.models import Group
 from app.repositories.group import GroupRepository
 from app.repositories.section import SectionRepository
-from app.schemas import GroupCreate, GroupUpdate
+from app.schemas import GroupCreate, GroupFilter, GroupUpdate
 
 
 class GroupService:
-    """Business logic for group entities."""
-
     def __init__(
         self,
         repository: GroupRepository,
@@ -19,37 +17,73 @@ class GroupService:
         self._repository = repository
         self._section_repository = section_repository
 
-    async def list_groups(self, skip: int = 0, limit: int = 100) -> Sequence[Group]:
-        return await self._repository.list_groups(skip, limit)
+    async def list_groups(self, filters: GroupFilter) -> Sequence[Group]:
+        return await self._repository.list_groups(filters)
 
-    async def list_by_section(self, section_id: int) -> Sequence[Group]:
-        return await self._repository.list_by_section(section_id)
+    async def get_group_by_id(self, group_id: int) -> Group | None:
+        return await self._repository.get_group_by_id(group_id)
 
-    async def get_group_by_id(self, group_id: int) -> Group:
+    async def create_group(self, payload: GroupCreate) -> Group | Literal["SECTION_NOT_FOUND"]:
+        section_id, name = payload.section_id, payload.name
+
+        if not await self._section_exists(section_id):
+            return "SECTION_NOT_FOUND"
+
+        return await self._repository.create_group(section_id, name)
+
+    async def update_group(self, group_id: int, payload: GroupUpdate) -> Group | None:
         group = await self._repository.get_group_by_id(group_id)
+
         if group is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {group_id} not found")
+            return None
+
+        return await self._repository.update_group(group, payload)
+
+    async def delete_group(self, group_id: int) -> bool:
+        group = await self._repository.get_group_by_id(group_id)
+
+        if group is None:
+            return False
+
+        await self._repository.delete_group(group)
+        return True
+
+    async def submit_group(self, group_id: int) -> Group | Literal["NOT_FOUND", "TRANSITION_ERROR"]:
+        group = await self._repository.get_group_by_id(group_id)
+
+        if group is None:
+            return "NOT_FOUND"
+
+        if group.status != GroupStatus.FORMING:
+            return "TRANSITION_ERROR"
+
+        group = await self._repository.update_status(group, GroupStatus.PENDING)
         return group
 
-    async def create_group(self, data: GroupCreate) -> Group:
-        if data.name is None or len(data.name) == 0:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Group name cannot be empty")
+    async def approve_group(self, group_id: int) -> Group | Literal["NOT_FOUND", "TRANSITION_ERROR"]:
+        group = await self._repository.get_group_by_id(group_id)
 
-        if data.section_id:
-            section = await self._section_repository.get_section_by_id(data.section_id)
-            if section is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Section {data.section_id} not found"
-                )
-
-        return await self._repository.create_group(data)
-
-    async def update_group(self, group_id: int, data: GroupUpdate) -> Group:
-        group = await self._repository.update_group(group_id, data)
         if group is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {group_id} not found")
+            return "NOT_FOUND"
+
+        if group.status != GroupStatus.PENDING:
+            return "TRANSITION_ERROR"
+
+        group = await self._repository.update_status(group, GroupStatus.APPROVED)
         return group
 
-    async def delete_group(self, group_id: int) -> None:
-        if not await self._repository.delete_group(group_id):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group {group_id} not found")
+    async def reject_group(self, group_id: int) -> Group | Literal["NOT_FOUND", "TRANSITION_ERROR"]:
+        group = await self._repository.get_group_by_id(group_id)
+
+        if group is None:
+            return "NOT_FOUND"
+
+        if group.status != GroupStatus.PENDING:
+            return "TRANSITION_ERROR"
+
+        group = await self._repository.update_status(group, GroupStatus.REJECTED)
+        return group
+
+    async def _section_exists(self, section_id: int) -> bool:
+        section = await self._section_repository.get_section_by_id(section_id)
+        return section is not None
