@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import SectionJury
+from app.models import Jury, SectionJury
 
 
 class SectionJuryRepository:
@@ -82,8 +82,8 @@ class SectionJuryRepository:
             select(SectionJury)
             .where(SectionJury.section_id == section_id)
             .options(
-                selectinload(SectionJury.jury).selectinload("person"),
-                selectinload(SectionJury.jury).selectinload("university"),
+                selectinload(SectionJury.jury).selectinload(Jury.person),
+                selectinload(SectionJury.jury).selectinload(Jury.university),
             )
             .order_by(SectionJury.id)
         )

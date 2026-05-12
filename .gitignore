@@ -12,3 +12,7 @@ source/bot/database/instance/*.db
 backend/2025_программа_science_kaleidoscope_итоговый_вариант.docx
 generated/
 
+backend/test_program.pdf
+.gitignore
+backend/test_program.docx
+backend/test_program.doc

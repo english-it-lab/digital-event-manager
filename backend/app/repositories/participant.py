@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Participant
+from app.models import Faculty, Participant
 
 
 class ParticipantRepository:
@@ -33,7 +33,7 @@ class ParticipantRepository:
             .where(Participant.section_id == section_id)
             .options(
                 selectinload(Participant.person),
-                selectinload(Participant.faculty).selectinload("university"),
+                selectinload(Participant.faculty).selectinload(Faculty.university),
                 selectinload(Participant.scientific_advisor),
             )
             .order_by(Participant.presentation_order, Participant.id)

@@ -24,7 +24,9 @@ from app.repositories.university import UniversityRepository
 from app.services.committee import CommitteeService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
+from app.services.organizer import OrganizerService
 from app.services.participant_ranking import ParticipantRankingService
+from app.services.person import PersonService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
 from app.services.section_jury import SectionJuryService
@@ -37,6 +39,7 @@ Dependencies for event program generation (separate to avoid circular imports)
 """
 from app.repositories.events import EventRepository
 from app.repositories.venues import VenueRepository
+from app.services.doc_generator import DocGeneratorService
 from app.services.events import EventProgramService
 from app.services.pdf_generator import PDFGeneratorService
 from app.services.venues import VenuesService
@@ -159,8 +162,28 @@ def get_pdf_generator_service() -> PDFGeneratorService:
     """Dependency for PDF generator service."""
     return PDFGeneratorService()
 
+
+def get_doc_generator_service() -> DocGeneratorService:
+    """Dependency for DOC generator service."""
+    return DocGeneratorService()
+
+
 def get_venues(
     session: Annotated[AsyncSession, Depends(get_session)],
 )-> VenuesService:
     repository = VenueRepository(session)
     return VenuesService(repository)
+
+
+def get_person_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> PersonService:
+    repository = PersonRepository(session)
+    return PersonService(repository)
+
+
+def get_organizer_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> OrganizerService:
+    repository = OrganizerRepository(session)
+    return OrganizerService(repository)

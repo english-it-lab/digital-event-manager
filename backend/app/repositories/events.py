@@ -2,8 +2,9 @@ from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models import Event, Organizer, Person, Venue
+from app.models import Event, Organizer, Venue
 from app.schemas import EventCreate
 
 
@@ -32,12 +33,13 @@ class EventRepository:
         return event
 
 
-    async def get_event_with_organizer(self, event_id: int) -> Event:
+    async def get_event_with_organizer(self, event_id: int) -> Event | None:
         stmt = (
             select(Event)
-            .join(Organizer, Event.organizer_id == Organizer.id)
-            .join(Person, Organizer.person_id == Person.id)
-            .join(Venue, Event.venue_id == Venue.id)
+            .options(
+                selectinload(Event.venue),
+                selectinload(Event.organizer).selectinload(Organizer.person),
+            )
             .where(Event.id == event_id)
         )
         result = await self._session.execute(stmt)

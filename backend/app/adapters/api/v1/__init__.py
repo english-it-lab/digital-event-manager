@@ -3,8 +3,10 @@ from fastapi import APIRouter
 from app.adapters.api.v1 import (
     committee,
     juries,
+    organizers,
     participant_rankings,
     participant_scores,
+    people,
     poster_contents,
     section_juries,
     technical_requirements,
@@ -26,6 +28,8 @@ router.include_router(universities.router, prefix="/universities")
 router.include_router(technical_requirements.router, prefix="/technical-requirements")
 router.include_router(events.router, prefix="/events")
 router.include_router(venues.router, prefix="/venues")
+router.include_router(people.router, prefix="/people")
+router.include_router(organizers.router, prefix="/organizers")
 router.include_router(
     technical_requirements.router, prefix="/technical-requirements"
 )
