@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     email_login: str = Field(default="", validation_alias="EMAIL_LOGIN")
     email_password: str = Field(default="", validation_alias="EMAIL_PASSWORD")
 
+    jwt_secret_key: str = Field(default="test-secret-key")
+
     @property
     def database_url(self) -> str:
         """Async connection string for SQLAlchemy."""

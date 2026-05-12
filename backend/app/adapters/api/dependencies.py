@@ -25,6 +25,7 @@ from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
+from app.services.jwt import JwtService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
@@ -126,6 +127,10 @@ def get_section_jury_service(
         section_repository=section_repository,
         jury_repository=jury_repository,
     )
+
+
+def get_jwt_service() -> JwtService:
+    return JwtService()
 
 
 def get_email_confirmation_service() -> EmailConfirmationService:
