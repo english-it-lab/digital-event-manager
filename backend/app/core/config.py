@@ -24,12 +24,10 @@ class Settings(BaseSettings):
     email_confirmation_secret_key: str = Field(default="test-email-confirmation-secret")
 
     # SMTP configuration
-    smtp_host: str = Field(default="smtp.gmail.com")
+    smtp_server: str = Field(default="smtp.yandex.ru", validation_alias="SMTP_SERVER")
     smtp_port: int = Field(default=587)
-    smtp_user: str = Field(default="")
-    smtp_password: str = Field(default="")
-    smtp_from_email: str = Field(default="noreply@example.com")
-    smtp_use_tls: bool = Field(default=True)
+    email_login: str = Field(default="", validation_alias="EMAIL_LOGIN")
+    email_password: str = Field(default="", validation_alias="EMAIL_PASSWORD")
 
     @property
     def database_url(self) -> str:
