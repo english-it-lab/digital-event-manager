@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from sqlalchemy import (
-    BigInteger,
-    Boolean,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    UniqueConstraint,
-)
+from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+
+from app.enums.group import GroupStatus
 
 
 class Base(DeclarativeBase):
@@ -173,6 +166,13 @@ class Group(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
     name: Mapped[str | None] = mapped_column(String(100))
+
+    status: Mapped[GroupStatus] = mapped_column(
+        SQLEnum(GroupStatus),
+        default=GroupStatus.FORMING,
+        nullable=False,
+    )
+
     member_count: Mapped[int | None] = mapped_column(Integer)
     registration_time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
 

@@ -20,10 +20,14 @@ class Settings(BaseSettings):
     db_name: str = Field(default="digital_events")
     db_echo: bool = Field(default=False)
 
-    # for mail
-    email_password: str  # app password!
-    email_login: str
-    smtp_server: str
+    # Email confirmation
+    email_confirmation_secret_key: str = Field(default="test-email-confirmation-secret")
+
+    # SMTP configuration
+    smtp_server: str = Field(default="smtp.yandex.ru", validation_alias="SMTP_SERVER")
+    smtp_port: int = Field(default=587)
+    email_login: str = Field(default="", validation_alias="EMAIL_LOGIN")
+    email_password: str = Field(default="", validation_alias="EMAIL_PASSWORD")
 
     jwt_secret_key: str = Field(default="test-secret-key")
 
