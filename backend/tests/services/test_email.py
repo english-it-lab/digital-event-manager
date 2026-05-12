@@ -9,8 +9,9 @@ from app.services.send_mails import send_email
 # Фикстура для мока настроек
 @pytest.fixture
 def mock_settings():
-    with patch("app.services.send_mails.settings") as mock:
+    with patch("app.core.config.settings") as mock:
         mock.smtp_server = "smtp.example.com"
+        mock.smtp_port = 587
         mock.email_login = "test@example.com"
         mock.email_password = "test-password"
         yield mock
