@@ -10,11 +10,10 @@ from app.services.send_mails import send_email
 @pytest.fixture
 def mock_settings():
     with patch("app.core.config.settings") as mock:
-        mock.smtp_host = "smtp.example.com"
+        mock.smtp_server = "smtp.example.com"
         mock.smtp_port = 587
-        mock.smtp_user = "test@example.com"
-        mock.smtp_password = "test-password"
-        mock.smtp_from_email = "from@example.com"
+        mock.email_login = "test@example.com"
+        mock.email_password = "test-password"
         yield mock
 
 
@@ -26,9 +25,9 @@ def test_send_email_success(capsys):
 
         send_email("user@example.com", "Hello", "Test body")
 
-        MockSMTP.assert_called_once_with(settings.smtp_host, 587)
+        MockSMTP.assert_called_once_with(settings.smtp_server, 587)
         mock_server.starttls.assert_called_once()
-        mock_server.login.assert_called_once_with(settings.smtp_user, settings.smtp_password)
+        mock_server.login.assert_called_once_with(settings.email_login, settings.email_password)
         mock_server.send_message.assert_called_once()
 
         captured = capsys.readouterr()
@@ -51,4 +50,4 @@ def test_send_email_failure(capsys):
 def test_smtp_port():
     with patch("smtplib.SMTP") as MockSMTP, patch("builtins.print"):  # подавляем print
         send_email("a@b.c", "s", "b")
-        MockSMTP.assert_called_once_with(settings.smtp_host, 587)
+        MockSMTP.assert_called_once_with(settings.smtp_server, 587)
