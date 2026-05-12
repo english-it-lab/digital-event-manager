@@ -23,7 +23,7 @@ def upgrade() -> None:
     group_status = sa.Enum('FORMING', 'PENDING', 'APPROVED', 'REJECTED', name='groupstatus')
     group_status.create(op.get_bind(), checkfirst=True)
 
-    op.add_column('groups', sa.Column('status', group_status, nullable=False))
+    op.add_column('groups', sa.Column('status', group_status, server_default='FORMING', nullable=False))
 
 def downgrade() -> None:
     """Downgrade schema."""
