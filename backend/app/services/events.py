@@ -1,80 +1,126 @@
-# app/services/event_program.py
 from collections.abc import Sequence
-from app.models import Event, Section, Participant
+
+from app.models import Event
+from app.repositories.committee_member import CommitteeMemberRepository
 from app.repositories.events import EventRepository
-from app.repositories.section import SectionRepository
 from app.repositories.participant import ParticipantRepository
+from app.repositories.section import SectionRepository
+from app.repositories.section_jury import SectionJuryRepository
 from app.schemas import EventCreate
+
 
 class EventProgramService:
 
-    def __init__(self, event_repo: EventRepository,
+    def __init__(
+        self,
+        event_repo: EventRepository,
         section_repo: SectionRepository,
-        participant_repo: ParticipantRepository,) -> None:
+        participant_repo: ParticipantRepository,
+        committee_repo: CommitteeMemberRepository,
+        section_jury_repo: SectionJuryRepository,
+    ) -> None:
         self._event_repo = event_repo
         self._section_repo = section_repo
         self._participant_repo = participant_repo
-    
+        self._committee_repo = committee_repo
+        self._section_jury_repo = section_jury_repo
 
     async def list_events(self) -> Sequence[Event]:
         return await self._event_repo.list_events()
 
-
     async def create_event(self, payload: EventCreate) -> Event:
         return await self._event_repo.create_event(payload)
 
-
     async def get_event_program_data(self, event_id: int) -> dict:
-        # 1. Получаем мероприятие с организатором
         event = await self._event_repo.get_event_with_organizer(event_id)
         if not event:
             raise ValueError(f"Мероприятие {event_id} не найдено")
-        
-        # 2. Получаем все секции мероприятия
+
         sections = await self._section_repo.get_sections_by_event(event_id)
-        
-        # 3. Для каждой секции получаем участников
+
+        committee = await self._committee_repo.list_by_event(event_id)
+        committee_data = []
+        for member in committee:
+            person = member.person
+            committee_data.append({
+                "id": member.id,
+                "full_name": f"{person.last_name} {person.first_name} {person.middle_name or ''}".strip() if person else "",
+                "role": member.role,
+                "committee_type": member.committee_type,
+                "degree": person.degree if person else None,
+                "title": person.title if person else None,
+                "position": person.position if person else None,
+                "workplace": person.workplace if person else None,
+                "sort_order": member.sort_order,
+            })
+
         sections_data = []
         for section in sections:
+            section_juries = await self._section_jury_repo.list_by_section_with_jury(section.id)
+            juries_data = []
+            for sj in section_juries:
+                jury_person = sj.jury.person if sj.jury else None
+                jury_university = sj.jury.university if sj.jury else None
+                juries_data.append({
+                    "id": sj.jury.id if sj.jury else None,
+                    "full_name": f"{jury_person.last_name} {jury_person.first_name} {jury_person.middle_name or ''}".strip() if jury_person else "",
+                    "degree": jury_person.degree if jury_person else None,
+                    "title": jury_person.title if jury_person else None,
+                    "position": jury_person.position if jury_person else None,
+                    "workplace": jury_person.workplace if jury_person else None,
+                    "university": jury_university.name if jury_university else None,
+                    "is_chairman": sj.jury.is_chairman if sj.jury else False,
+                })
+
             participants = await self._participant_repo.get_participants_by_section(section.id)
-            
-            # Формируем данные участника
             participants_data = []
             for participant in participants:
                 person = participant.person
+                advisor = participant.scientific_advisor
                 participants_data.append({
                     "id": participant.id,
-                    "full_name": f"{person.last_name} {person.first_name} {person.middle_name or ''}".strip(),
-                    "university": participant.faculty.university.name if participant.faculty else "",
+                    "full_name": f"{person.last_name} {person.first_name} {person.middle_name or ''}".strip() if person else "",
+                    "university": participant.faculty.university.name if participant.faculty and participant.faculty.university else "",
                     "faculty": participant.faculty.name if participant.faculty else "",
                     "presentation_topic": participant.presentation_topic,
-                    "is_poster": participant.is_poster_participant,
+                    "abstract": participant.abstract,
+                    "presentation_order": participant.presentation_order,
+                    "scientific_advisor": {
+                        "full_name": f"{advisor.last_name} {advisor.first_name} {advisor.middle_name or ''}".strip() if advisor else "",
+                        "degree": advisor.degree if advisor else None,
+                        "title": advisor.title if advisor else None,
+                        "position": advisor.position if advisor else None,
+                        "workplace": advisor.workplace if advisor else None,
+                    } if advisor else None,
                 })
-            
+
             sections_data.append({
                 "id": section.id,
                 "name": section.name,
                 "lecture_hall": section.lecture_hall,
-                "time": section.time,
+                "time": section.time.isoformat() if section.time else None,
+                "section_type": section.section_type,
+                "time_limit": section.time_limit,
+                "juries": juries_data,
                 "participants": participants_data,
             })
-        
-        # 4. Формируем итоговую структуру
+
         return {
             "event": {
                 "id": event.id,
                 "name": event.name,
                 "type": event.type,
-                "date": event.date,
+                "date": event.event_date.isoformat() if event.event_date else None,
                 "venue": {
                     "city": event.venue.city,
                     "street": event.venue.street,
                     "building": event.venue.building,
                 } if event.venue else {},
                 "organizer": {
-                    "full_name": f"{event.organizer.person.last_name} {event.organizer.person.first_name}",
+                    "full_name": f"{event.organizer.person.last_name} {event.organizer.person.first_name}" if event.organizer and event.organizer.person else "",
                     "contact": event.organizer.contact_number,
                 } if event.organizer else {},
             },
+            "committee": committee_data,
             "sections": sections_data,
         }

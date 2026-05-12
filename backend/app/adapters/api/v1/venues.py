@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, status
 from typing import Annotated
 
-from app.adapters.api.dependencies import get_venues
+from fastapi import APIRouter, Depends, status
 
+from app.adapters.api.dependencies import get_venues
+from app.schemas import VenueCreate, VenueRead
 from app.services.venues import VenuesService
-from app.schemas import VenueRead, VenueCreate
 
 router = APIRouter(tags=["venues"])
 

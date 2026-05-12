@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import EventSection, OrganizerSectionChange, Section
 from app.schemas import SectionCreate, SectionUpdate
 
-from app.models import Section, EventSection
 
 class SectionRepository:
     """Data access layer for sections management."""

@@ -5,6 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
+from app.repositories.committee_member import CommitteeMemberRepository
 from app.repositories.event import EventRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
@@ -20,6 +21,7 @@ from app.repositories.technical_requirement import (
 )
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.services.committee import CommitteeService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.participant_ranking import ParticipantRankingService
@@ -34,12 +36,9 @@ from app.services.university import UniversityService
 Dependencies for event program generation (separate to avoid circular imports)
 """
 from app.repositories.events import EventRepository
-from app.repositories.section import SectionRepository
-from app.repositories.participant import ParticipantRepository
+from app.repositories.venues import VenueRepository
 from app.services.events import EventProgramService
 from app.services.pdf_generator import PDFGeneratorService
-
-from app.repositories.venues import VenueRepository
 from app.services.venues import VenuesService
 
 
@@ -144,7 +143,17 @@ def get_event_program_service(
     event_repo = EventRepository(session)
     section_repo = SectionRepository(session)
     participant_repo = ParticipantRepository(session)
-    return EventProgramService(event_repo, section_repo, participant_repo)
+    committee_repo = CommitteeMemberRepository(session)
+    section_jury_repo = SectionJuryRepository(session)
+    return EventProgramService(event_repo, section_repo, participant_repo, committee_repo, section_jury_repo)
+
+
+def get_committee_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> CommitteeService:
+    repository = CommitteeMemberRepository(session)
+    return CommitteeService(repository)
+
 
 def get_pdf_generator_service() -> PDFGeneratorService:
     """Dependency for PDF generator service."""

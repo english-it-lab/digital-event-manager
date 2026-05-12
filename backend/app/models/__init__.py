@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -66,8 +67,14 @@ class Person(Base):
 
     organizers: Mapped[list[Organizer]] = relationship(back_populates="person")
     teachers: Mapped[list[Teacher]] = relationship(back_populates="person")
-    participants: Mapped[list[Participant]] = relationship(back_populates="person")
+    participants: Mapped[list[Participant]] = relationship(
+        back_populates="person", foreign_keys="Participant.person_id"
+    )
     juries: Mapped[list[Jury]] = relationship(back_populates="person")
+    committee_members: Mapped[list[CommitteeMember]] = relationship(back_populates="person")
+    scientific_advisees: Mapped[list[Participant]] = relationship(
+        back_populates="scientific_advisor", foreign_keys="Participant.scientific_advisor_id"
+    )
 
 
 class Organizer(Base):
@@ -108,6 +115,21 @@ class Event(Base):
     venue: Mapped[Venue | None] = relationship(back_populates="events")
     organizer: Mapped[Organizer | None] = relationship(back_populates="events")
     event_sections: Mapped[list[EventSection]] = relationship(back_populates="event")
+    committee_members: Mapped[list[CommitteeMember]] = relationship(back_populates="event")
+
+
+class CommitteeMember(Base):
+    __tablename__ = "committee_members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"))
+    person_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
+    role: Mapped[str | None] = mapped_column(String(100))
+    committee_type: Mapped[str | None] = mapped_column(String(50))
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    event: Mapped[Event] = relationship(back_populates="committee_members")
+    person: Mapped[Person | None] = relationship(back_populates="committee_members")
 
 
 class Course(Base):
@@ -135,6 +157,8 @@ class Section(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     lecture_hall: Mapped[str | None] = mapped_column(String(7))
     time: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
+    section_type: Mapped[str | None] = mapped_column(String(50))
+    time_limit: Mapped[int | None] = mapped_column(Integer)
 
     topics: Mapped[list[Topic]] = relationship(back_populates="section")
     groups: Mapped[list[Group]] = relationship(back_populates="section")
@@ -221,15 +245,21 @@ class Participant(Base):
     textbook_level_id: Mapped[int | None] = mapped_column(ForeignKey("textbook_levels.id", ondelete="SET NULL"))
     is_group_leader: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     presentation_topic: Mapped[str | None] = mapped_column(String(255))
+    abstract: Mapped[str | None] = mapped_column(Text)
+    scientific_advisor_id: Mapped[int | None] = mapped_column(ForeignKey("people.id", ondelete="SET NULL"))
+    presentation_order: Mapped[int | None] = mapped_column(Integer)
     is_notification_allowed: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     password_hash: Mapped[str | None] = mapped_column(String(255))
 
-    person: Mapped[Person | None] = relationship(back_populates="participants")
+    person: Mapped[Person | None] = relationship(back_populates="participants", foreign_keys=[person_id])
     faculty: Mapped[Faculty | None] = relationship(back_populates="participants")
     course: Mapped[Course | None] = relationship(back_populates="participants")
     teacher: Mapped[Teacher | None] = relationship(back_populates="participants")
     section: Mapped[Section | None] = relationship(back_populates="participants")
     textbook_level: Mapped[TextbookLevel | None] = relationship(back_populates="participants")
+    scientific_advisor: Mapped[Person | None] = relationship(
+        back_populates="scientific_advisees", foreign_keys=[scientific_advisor_id]
+    )
     group_participants: Mapped[list[GroupParticipant]] = relationship(back_populates="participant")
     jury_scores: Mapped[list[JuryScore]] = relationship(back_populates="participant")
     organizer_changes: Mapped[list[OrganizerParticipantChange]] = relationship(back_populates="participant")
@@ -364,6 +394,7 @@ __all__ = [
     "Organizer",
     "Venue",
     "Event",
+    "CommitteeMember",
     "Course",
     "TextbookLevel",
     "Section",

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.adapters.api.v1 import (
+    committee,
     juries,
     participant_rankings,
     participant_scores,
@@ -34,6 +35,7 @@ router.include_router(participant_scores.router, prefix="/participants/{particip
 router.include_router(participant_rankings.router, prefix="/participant-rankings")
 router.include_router(sections.router, prefix="/sections")
 router.include_router(section_juries.router, prefix="/section-juries")
+router.include_router(committee.router)
 router.include_router(draw_router)
 router.include_router(draw_results_router)
 router.include_router(topics_router)

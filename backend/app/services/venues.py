@@ -1,6 +1,6 @@
 from collections.abc import Sequence
-from app.models import Venue
 
+from app.models import Venue
 from app.repositories.venues import VenueRepository
 from app.schemas import VenueCreate
 

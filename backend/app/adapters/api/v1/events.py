@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, status
 from typing import Annotated
 
-from app.adapters.api.dependencies import get_event_program_service
-from app.adapters.api.dependencies import get_pdf_generator_service
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
+from app.adapters.api.dependencies import get_event_program_service, get_pdf_generator_service
+from app.schemas import EventCreate, EventRead
 from app.services.events import EventProgramService
 from app.services.pdf_generator import PDFGeneratorService
-from app.schemas import EventRead, EventCreate
 
 router = APIRouter(tags=["events"])
 
@@ -44,10 +43,10 @@ async def generate_event_program_pdf(
     try:
         # Получаем данные для программы
         program_data = await program_service.get_event_program_data(event_id)
-        
+
         # Генерируем PDF
         pdf_bytes = pdf_service.generate_event_program(program_data)
-        
+
         # Возвращаем PDF как ответ
         return Response(
             content=pdf_bytes,
