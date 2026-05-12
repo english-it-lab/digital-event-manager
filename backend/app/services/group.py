@@ -58,6 +58,7 @@ class GroupService:
             return "TRANSITION_ERROR"
 
         group = await self._repository.update_status(group, GroupStatus.PENDING)
+        group = await self._repository.set_registration_time(group)
         return group
 
     async def approve_group(self, group_id: int) -> Group | Literal["NOT_FOUND", "TRANSITION_ERROR"]:
