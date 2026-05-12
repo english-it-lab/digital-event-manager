@@ -536,27 +536,6 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
-class GroupBase(BaseModel):
-    section_id: int | None = None
-    name: str | None = None
-    member_count: int | None = None
-
-
-class GroupCreate(GroupBase):
-    pass
-
-
-class GroupUpdate(BaseModel):
-    section_id: int | None = None
-    name: str | None = None
-    member_count: int | None = None
-
-
-class GroupRead(ORMModelMixin, GroupBase):
-    id: int
-    registration_time: datetime
-
-
 __all__ = [
     "ORMModelMixin",
     "UniversityBase",
