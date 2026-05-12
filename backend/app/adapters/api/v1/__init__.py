@@ -9,6 +9,7 @@ from app.adapters.api.v1 import (
     technical_requirements,
     universities,
     sections,
+    groups,
 )
 from app.adapters.api.v1.draw import DrawApiImpl
 from app.adapters.api.v1.draw_results import DrawResultsApiImpl
@@ -26,6 +27,7 @@ router.include_router(participant_scores.router, prefix="/participants/{particip
 router.include_router(participant_rankings.router, prefix="/participant-rankings")
 router.include_router(sections.router, prefix="/sections")
 router.include_router(section_juries.router, prefix="/section-juries")
+router.include_router(groups.router, prefix="/groups")
 router.include_router(draw_router)
 router.include_router(draw_results_router)
 router.include_router(topics_router)
