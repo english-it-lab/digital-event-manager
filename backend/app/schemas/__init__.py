@@ -542,31 +542,18 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
-class EmailConfirmationRequest(BaseModel):
-    """Request for email confirmation code generation."""
-
+class EmailCodeRequest(BaseModel):
     email: EmailStr
 
 
-class EmailConfirmationResponse(BaseModel):
-    """Response confirming code sent."""
-
-    message: str
-    email_masked: str
-
-
-class EmailVerificationRequest(BaseModel):
-    """Request for email code verification."""
-
+class LoginRequest(BaseModel):
     email: EmailStr
     code: str
 
 
-class EmailVerificationResponse(BaseModel):
-    """Response for email verification result."""
-
-    success: bool
-    message: str
+class LoginResponse(ORMModelMixin, BaseModel):
+    access_token: str
+    token_type: str = "bearer"
 
 
 __all__ = [
@@ -615,6 +602,7 @@ __all__ = [
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
+    "InviteTokenResponse",
     "TeacherBase",
     "TeacherCreate",
     "TeacherRead",
@@ -658,8 +646,7 @@ __all__ = [
     "PosterContentRead",
     "PosterContentUpdate",
     "JuryProgressItem",
-    "EmailConfirmationRequest",
-    "EmailConfirmationResponse",
-    "EmailVerificationRequest",
-    "EmailVerificationResponse",
+    "EmailCodeRequest",
+    "LoginRequest",
+    "LoginResponse",
 ]

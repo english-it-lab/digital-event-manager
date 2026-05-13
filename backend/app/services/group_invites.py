@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 
+from app.core.config import settings
 from app.models import Group
 from app.repositories.group import GroupRepository
 from app.repositories.group_participant import GroupParticipantRepository
@@ -24,7 +25,7 @@ class GroupInviteService:
         self._group_participant_repository = group_participant_repository
 
     async def create_invite_token(self, group_id: int, person_id: int) -> InviteTokenResponse:
-        participant = self._group_participant_repository.get_participant_by_group_and_person(
+        participant = await self._group_participant_repository.get_participant_by_group_and_person(
             group_id=group_id, person_id=person_id
         )
         if participant is None:
@@ -34,7 +35,7 @@ class GroupInviteService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
         payload = {self.GROUP_ID_KEY: group_id}
-        token = self._jwt_service.create_jwt(payload)
+        token = self._jwt_service.create_jwt(payload, settings.jwt_ttl_minutes)
         return InviteTokenResponse(token=token)
 
     async def join_by_token(self, token: str, person_id: int) -> Group:

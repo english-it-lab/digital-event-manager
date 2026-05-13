@@ -50,7 +50,7 @@ class Person(Base):
     first_name: Mapped[str | None] = mapped_column(String(100))
     last_name: Mapped[str | None] = mapped_column(String(100))
     middle_name: Mapped[str | None] = mapped_column(String(100))
-    email: Mapped[str | None] = mapped_column(String(255))
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     title: Mapped[str | None] = mapped_column(String(20))
     degree: Mapped[str | None] = mapped_column(String(20))
     position: Mapped[str | None] = mapped_column(String(50))

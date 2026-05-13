@@ -23,6 +23,7 @@ from app.repositories.technical_requirement import (
 )
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.services.auth import AuthService
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.group_invites import GroupInviteService
@@ -158,15 +159,15 @@ def get_group_participant_repository(
     return GroupParticipantRepository(session=session)
 
 
+def get_participant_repository(session: Annotated[AsyncSession, Depends(get_session)]) -> ParticipantRepository:
+    return ParticipantRepository(session=session)
+
+
 def get_group_service(
     group_repo: Annotated[GroupRepository, Depends(get_group_repository)],
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
-
-
-def get_participant_repository(session: Annotated[AsyncSession, Depends(get_session)]) -> ParticipantRepository:
-    return ParticipantRepository(session=session)
 
 
 def get_group_invite_service(
@@ -181,6 +182,15 @@ def get_group_invite_service(
         group_participant_repository=group_participant_repository,
         participant_repository=participant_repository,
     )
+
+
+def get_auth_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AuthService:
+    email_service = get_email_confirmation_service()
+    jwt_service = get_jwt_service()
+    person_repository = PersonRepository(session)
+    return AuthService(email_service, jwt_service, person_repository)
 
 
 security = HTTPBearer()
@@ -200,11 +210,8 @@ def get_current_user(
 
     try:
         jwt_payload = jwt_service.decode_jwt(token)
-        user_id = jwt_payload.get("sub")
-    except Exception as e:
-        raise credentials_exception from e
-
-    if user_id is None:
-        raise credentials_exception
+        user_id = int(jwt_payload.get("sub"))
+    except Exception as exc:
+        raise credentials_exception from exc
 
     return user_id
