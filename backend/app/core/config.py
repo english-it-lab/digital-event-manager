@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # Email confirmation
     email_confirmation_secret_key: str = Field(default="test-email-confirmation-secret")
+    email_confirmation_time_window_minutes: int = Field(default=2)
 
     # SMTP configuration
     smtp_server: str = Field(default="smtp.yandex.ru", validation_alias="SMTP_SERVER")
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
     email_password: str = Field(default="", validation_alias="EMAIL_PASSWORD")
 
     jwt_secret_key: str = Field(default="test-secret-key")
+    jwt_ttl_minutes: int = Field(default=1440)
 
     @property
     def database_url(self) -> str:
