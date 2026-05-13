@@ -75,3 +75,11 @@ class GroupRepository:
         await self._session.refresh(group)
 
         return group
+
+    async def increment_count(self, group: Group) -> Group:
+        group.member_count += 1
+
+        await self._session.flush()
+        await self._session.refresh(group)
+
+        return group
