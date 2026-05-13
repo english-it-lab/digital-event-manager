@@ -24,6 +24,7 @@ from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
+from app.services.group_invites import GroupInviteService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
@@ -149,12 +150,31 @@ def get_group_repository(
 ) -> GroupRepository:
     return GroupRepository(session)
 
+
 def get_group_participant_repository(
     session: Annotated[AsyncSession, Depends(get_session)]) -> GroupParticipantRepository:
     return GroupParticipantRepository(session=session)
+
 
 def get_group_service(
     group_repo: Annotated[GroupRepository, Depends(get_group_repository)],
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
+
+
+def get_participant_repository(session: Annotated[AsyncSession, Depends(get_session)]) -> ParticipantRepository:
+    return ParticipantRepository(session=session)
+
+
+def get_group_invites_service(
+    jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
+    group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
+    group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
+    participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+
+) -> GroupInviteService:
+    return GroupInviteService(jwt_service=jwt_service,
+                              group_repository=group_repository,
+                              group_participant_repository=group_participant_repository,
+                              participant_repository=participant_repository)
