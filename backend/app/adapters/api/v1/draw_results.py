@@ -25,10 +25,5 @@ class DrawResultsApiImpl(BaseDrawResultsApi):
             service = DrawService(topic_repo, group_repo, group_topic_repo)
             results = await service.get_results(sectionId)
             return [
-                DrawResult(
-                    group_id=r["group_id"],
-                    group_name=r["group_name"],
-                    topics=r["topics"]
-                )
-                for r in results
+                DrawResult(group_id=r["group_id"], group_name=r["group_name"], topics=r["topics"]) for r in results
             ]

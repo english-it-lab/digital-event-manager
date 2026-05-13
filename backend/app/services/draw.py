@@ -93,14 +93,9 @@ class DrawService:
         for item in results:
             group_id = item["group_id"]
             if group_id not in groups_dict:
-                groups_dict[group_id] = {
-                    "group_id": group_id,
-                    "group_name": item["group_name"],
-                    "topics": []
-                }
+                groups_dict[group_id] = {"group_id": group_id, "group_name": item["group_name"], "topics": []}
             if item["topic_id"]:
-                groups_dict[group_id]["topics"].append({
-                    "topic_id": item["topic_id"],
-                    "topic_name": item["topic_name"]
-                })
+                groups_dict[group_id]["topics"].append(
+                    {"topic_id": item["topic_id"], "topic_name": item["topic_name"]}
+                )
         return list(groups_dict.values())
