@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums.group import GroupStatus
@@ -62,6 +62,14 @@ class GroupRepository:
 
     async def update_status(self, group: Group, status: GroupStatus) -> Group:
         group.status = status
+
+        await self._session.flush()
+        await self._session.refresh(group)
+
+        return group
+
+    async def set_registration_time(self, group: Group) -> Group:
+        group.registration_time = func.now()
 
         await self._session.flush()
         await self._session.refresh(group)
