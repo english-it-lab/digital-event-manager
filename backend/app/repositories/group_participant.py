@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Participant, GroupParticipant
+from app.models import GroupParticipant, Participant
 
 
 class GroupParticipantRepository:
@@ -18,14 +18,11 @@ class GroupParticipantRepository:
         await self._session.refresh(group_participant)
         return group_participant
 
-    def get_participant_by_group_and_person(self, group_id: int, person_id: int) -> Participant | None:
+    async def get_participant_by_group_and_person(self, group_id: int, person_id: int) -> Participant | None:
         stmt = (
             select(Participant)
             .join(GroupParticipant, GroupParticipant.participant_id == Participant.id)
-            .where(
-                GroupParticipant.group_id == group_id,
-                Participant.person_id == person_id
-            )
+            .where(GroupParticipant.group_id == group_id, Participant.person_id == person_id)
         )
 
         result = await self._session.execute(stmt)

@@ -16,7 +16,7 @@ class GroupInviteService:
         jwt_service: JwtService,
         group_repository: GroupRepository,
         participant_repository: ParticipantRepository,
-        group_participant_repository: GroupParticipantRepository
+        group_participant_repository: GroupParticipantRepository,
     ) -> None:
         self._jwt_service = jwt_service
         self._group_repository = group_repository
@@ -24,8 +24,9 @@ class GroupInviteService:
         self._group_participant_repository = group_participant_repository
 
     async def create_invite_token(self, group_id: int, person_id: int) -> InviteTokenResponse:
-        participant = self._group_participant_repository.get_participant_by_group_and_person(group_id=group_id,
-                                                                                             person_id=person_id)
+        participant = self._group_participant_repository.get_participant_by_group_and_person(
+            group_id=group_id, person_id=person_id
+        )
         if participant is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 

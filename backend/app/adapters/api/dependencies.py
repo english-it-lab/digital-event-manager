@@ -1,7 +1,8 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
@@ -152,7 +153,8 @@ def get_group_repository(
 
 
 def get_group_participant_repository(
-    session: Annotated[AsyncSession, Depends(get_session)]) -> GroupParticipantRepository:
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> GroupParticipantRepository:
     return GroupParticipantRepository(session=session)
 
 
@@ -167,14 +169,42 @@ def get_participant_repository(session: Annotated[AsyncSession, Depends(get_sess
     return ParticipantRepository(session=session)
 
 
-def get_group_invites_service(
+def get_group_invite_service(
     jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
     group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
     group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
-
 ) -> GroupInviteService:
-    return GroupInviteService(jwt_service=jwt_service,
-                              group_repository=group_repository,
-                              group_participant_repository=group_participant_repository,
-                              participant_repository=participant_repository)
+    return GroupInviteService(
+        jwt_service=jwt_service,
+        group_repository=group_repository,
+        group_participant_repository=group_participant_repository,
+        participant_repository=participant_repository,
+    )
+
+
+security = HTTPBearer()
+
+
+def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
+) -> int:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    token = credentials.credentials
+
+    try:
+        jwt_payload = jwt_service.decode_jwt(token)
+        user_id = jwt_payload.get("sub")
+    except Exception as e:
+        raise credentials_exception from e
+
+    if user_id is None:
+        raise credentials_exception
+
+    return user_id
