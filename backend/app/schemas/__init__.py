@@ -9,8 +9,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.enums.group import GroupStatus
 
-from app.enums.group import GroupStatus
-
 
 class ORMModelMixin:
     """Mixin that enables ORM mode for Pydantic models."""
