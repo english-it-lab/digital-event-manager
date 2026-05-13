@@ -83,3 +83,24 @@ class DrawService:
             "total_topics": num_topics,
             "total_groups": num_groups,
         }
+
+    async def get_results(self, section_id: int) -> list[dict]:
+        """Get draw results for a section."""
+        results = await self.group_topic_repo.get_by_section_with_details(section_id)
+
+        # Группируем по группам
+        groups_dict = {}
+        for item in results:
+            group_id = item["group_id"]
+            if group_id not in groups_dict:
+                groups_dict[group_id] = {
+                    "group_id": group_id,
+                    "group_name": item["group_name"],
+                    "topics": []
+                }
+            if item["topic_id"]:
+                groups_dict[group_id]["topics"].append({
+                    "topic_id": item["topic_id"],
+                    "topic_name": item["topic_name"]
+                })
+        return list(groups_dict.values())

@@ -1,7 +1,7 @@
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Group, GroupTopic
+from app.models import Group, GroupTopic, Topic
 
 
 class GroupTopicRepository:
@@ -33,3 +33,20 @@ class GroupTopicRepository:
         stmt = select(GroupTopic).join(Group).where(Group.section_id == section_id)
         result = await self._session.execute(stmt)
         return result.scalars().all()
+
+    async def get_by_section_with_details(self, section_id: int) -> list[dict]:
+        """Get draw results with group and topic details."""
+        stmt = (
+            select(
+                Group.id.label("group_id"),
+                Group.name.label("group_name"),
+                Topic.id.label("topic_id"),
+                Topic.name.label("topic_name"),
+            )
+            .select_from(Group)
+            .outerjoin(GroupTopic, Group.id == GroupTopic.group_id)
+            .outerjoin(Topic, GroupTopic.topic_id == Topic.id)
+            .where(Group.section_id == section_id)
+        )
+        result = await self._session.execute(stmt)
+        return [row._asdict() for row in result.all()]
