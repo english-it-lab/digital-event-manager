@@ -1,7 +1,7 @@
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from openapi_server.models.topic_create import TopicCreate
 from openapi_server.models.topic_update import TopicUpdate
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Topic
 
