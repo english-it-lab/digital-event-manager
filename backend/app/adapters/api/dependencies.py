@@ -1,7 +1,8 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
@@ -21,6 +22,7 @@ from app.repositories.technical_requirement import (
 )
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.services.auth import AuthService
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.jury import JuryService
@@ -154,3 +156,36 @@ def get_group_service(
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
+
+
+def get_auth_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AuthService:
+    email_service = get_email_confirmation_service()
+    jwt_service = get_jwt_service()
+    person_repository = PersonRepository(session)
+    return AuthService(email_service, jwt_service, person_repository)
+
+
+security = HTTPBearer()
+
+
+def get_current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
+) -> int:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    token = credentials.credentials
+
+    try:
+        jwt_payload = jwt_service.decode_jwt(token)
+        user_id = int(jwt_payload.get("sub"))
+    except Exception as exc:
+        raise credentials_exception from exc
+
+    return user_id
