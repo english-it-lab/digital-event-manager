@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db_session
 from app.repositories.event import EventRepository
 from app.repositories.group import GroupRepository
+from app.repositories.group_participant import GroupParticipantRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
 from app.repositories.organizer import OrganizerRepository
@@ -148,6 +149,9 @@ def get_group_repository(
 ) -> GroupRepository:
     return GroupRepository(session)
 
+def get_group_participant_repository(
+    session: Annotated[AsyncSession, Depends(get_session)]) -> GroupParticipantRepository:
+    return GroupParticipantRepository(session=session)
 
 def get_group_service(
     group_repo: Annotated[GroupRepository, Depends(get_group_repository)],
