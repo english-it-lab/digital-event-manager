@@ -25,6 +25,6 @@ class DrawApiImpl(BaseDrawApi):
 
             service = DrawService(topic_repo, group_repo, group_topic_repo)
 
-            await service.run_draw(sectionId) # results
+            await service.run_draw(sectionId)  # results
             # Сохраняем в памяти (для обратной совместимости)
             # self._draw_results_db[sectionId] = results
