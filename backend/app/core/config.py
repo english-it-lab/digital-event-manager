@@ -28,8 +28,7 @@ class Settings(BaseSettings):
     smtp_port: int = Field(default=587)
     email_login: str = Field(default="", validation_alias="EMAIL_LOGIN")
     email_password: str = Field(default="", validation_alias="EMAIL_PASSWORD")
-
-    jwt_secret_key: str = Field(default="test-secret-key")
+    jwt_secret_key: str = Field(default="JWT_SECRET_KEY")
 
     @property
     def database_url(self) -> str:

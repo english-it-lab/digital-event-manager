@@ -1,6 +1,7 @@
 from jose import jwt
 
 from app.core.config import settings
+from app.schemas import AuthPayload
 
 
 class JwtService:
@@ -8,8 +9,8 @@ class JwtService:
 
     ALGORITHM = "HS256"
 
-    def create_jwt(self, data: dict) -> str:
-        return jwt.encode(data, settings.jwt_secret_key, algorithm=self.ALGORITHM)
+    async def create_jwt(self, auth_payload: AuthPayload) -> str:
+        return jwt.encode(auth_payload.model_dump(), settings.jwt_secret_key, algorithm=self.ALGORITHM)
 
-    def decode_jwt(self, token: str) -> dict:
-        return jwt.decode(token, settings.jwt_secret_key, algorithms=[self.ALGORITHM])
+    async def decode_jwt(self, token: str) -> AuthPayload:
+        return AuthPayload.model_validate(jwt.decode(token, settings.jwt_secret_key, algorithms=[self.ALGORITHM]))

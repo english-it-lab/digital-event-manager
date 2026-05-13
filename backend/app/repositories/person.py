@@ -14,3 +14,13 @@ class PersonRepository:
         stmt = select(Person).where(Person.id == person_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+    """
+        CREATES OR UPDATES PERSON ENTITY
+    """
+
+    async def put_person(self, person: Person) -> Person:
+        merged = await self._session.merge(person)
+        await self._session.commit()
+        await self._session.refresh(merged)
+        return merged

@@ -27,6 +27,7 @@ from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
 from app.services.participant_ranking import ParticipantRankingService
+from app.services.person import PersonService
 from app.services.poster_content import PosterContentService
 from app.services.section import SectionService
 from app.services.section_jury import SectionJuryService
@@ -127,6 +128,13 @@ def get_section_jury_service(
         section_repository=section_repository,
         jury_repository=jury_repository,
     )
+
+
+def get_person_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> PersonService:
+    person_repository = PersonRepository(session)
+    return PersonService(person_repository=person_repository)
 
 
 def get_jwt_service() -> JwtService:
