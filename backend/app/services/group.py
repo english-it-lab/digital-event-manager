@@ -37,7 +37,7 @@ class GroupService:
 
         group = await self._repository.create_group(section_id, name)
         participant = await self._participant_repository.create_participant(
-            person_id=person_id, section_id=group.section_id
+            person_id=person_id, section_id=group.section_id, is_group_leader=True
         )
         await self._group_participant_repository.create_group_participant(group.id, participant.id)
         group = await self._repository.increment_count(group)

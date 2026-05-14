@@ -13,8 +13,8 @@ class ParticipantRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def create_participant(self, person_id: int, section_id: int) -> Participant:
-        participant = Participant(person_id=person_id, section_id=section_id)
+    async def create_participant(self, person_id: int, section_id: int, is_group_leader: bool) -> Participant:
+        participant = Participant(person_id=person_id, section_id=section_id, is_group_leader=is_group_leader)
         self._session.add(participant)
 
         await self._session.flush()
