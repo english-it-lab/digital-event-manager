@@ -46,7 +46,7 @@ class GroupInviteService:
         payload = self._jwt_service.decode_jwt(token)
         group_id = payload.get(self.GROUP_ID_KEY)
 
-        if self.is_participant_exists(group_id=group_id, person_id=person_id):
+        if await self.is_participant_exists(group_id=group_id, person_id=person_id):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         group = await self._group_repository.get_group_by_id(group_id)
@@ -58,7 +58,7 @@ class GroupInviteService:
 
         return group
 
-    def is_participant_exists(self, group_id: int, person_id: int) -> bool:
+    async def is_participant_exists(self, group_id: int, person_id: int) -> bool:
         participant = await self._group_participant_repository.get_participant_by_group_and_person(
             group_id=group_id, person_id=person_id
         )
