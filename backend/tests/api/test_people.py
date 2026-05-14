@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from app.adapters.api.dependencies import get_person_service, get_current_user
+from app.adapters.api.dependencies import get_current_user, get_person_service
 from app.main import app
 
 client = TestClient(app)
