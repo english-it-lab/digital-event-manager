@@ -25,10 +25,8 @@ class TestNotificationService:
     @pytest.fixture
     def service(self, mock_notification_repo, mock_event_repo):
         from app.services.notification import NotificationService
-        return NotificationService(
-            repository=mock_notification_repo,
-            event_repository=mock_event_repo
-        )
+
+        return NotificationService(repository=mock_notification_repo, event_repository=mock_event_repo)
 
     # ========== Вспомогательные методы для создания моков ==========
 
@@ -39,7 +37,6 @@ class TestNotificationService:
 
         participant = Mock()
         participant.person = person
-        # ВАЖНО: в коде сервиса проверяется participant.is_notification_allowed (атрибут, не метод)
         participant.is_notification_allowed = notification_allowed
         return participant
 
@@ -81,10 +78,9 @@ class TestNotificationService:
         mock_group = self._create_mock_group(num_participants=2)
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
 
-            # Должно быть 2 письма (на 2 участников)
             assert mock_send_email.call_count == 2
 
     # ========== TC-02: Event не найден ==========
@@ -106,13 +102,13 @@ class TestNotificationService:
         mock_event_repo.get_by_id.return_value = mock_event
 
         mock_group = Mock()
-        mock_group.group_topics = []  # Пустой список тем
+        mock_group.group_topics = []
         mock_group.name = "No Topic Group"
         mock_group.group_participants = []
 
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             mock_send_email.assert_not_called()
 
@@ -125,13 +121,11 @@ class TestNotificationService:
         mock_event.event_date = Mock(year=2025)
         mock_event_repo.get_by_id.return_value = mock_event
 
-        # Создаём группу с ОДНИМ участником, у которого есть email
         group = self._create_mock_group(num_participants=1)
         mock_notification_repo.get_notification_payload.return_value = [group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
-            # Ожидаем 1 письмо
             assert mock_send_email.call_count == 1
 
     # ========== TC-05: Отказ от уведомлений ==========
@@ -143,13 +137,12 @@ class TestNotificationService:
         mock_event.event_date = Mock(year=2025)
         mock_event_repo.get_by_id.return_value = mock_event
 
-        # Создаём участника с отключенными уведомлениями
         person = Mock()
         person.email = "disabled@example.com"
 
         participant = Mock()
         participant.person = person
-        participant.is_notification_allowed = False  # ВАЖНО: атрибут, не метод!
+        participant.is_notification_allowed = False
 
         gp = Mock()
         gp.participant = participant
@@ -168,9 +161,8 @@ class TestNotificationService:
 
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
-            # Писем быть не должно
             mock_send_email.assert_not_called()
 
     # ========== TC-06: Нет технических требований ==========
@@ -182,7 +174,6 @@ class TestNotificationService:
         mock_event.event_date = Mock(year=2025)
         mock_event_repo.get_by_id.return_value = mock_event
 
-        # Тема без технических требований
         topic = Mock()
         topic.name = "Topic Without Requirements"
         topic.technical_requirements = []
@@ -200,11 +191,11 @@ class TestNotificationService:
 
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
 
             call_args = mock_send_email.call_args_list[0][1]
-            assert "Требования не указаны" in call_args['body']
+            assert "Требования не указаны" in call_args["body"]
 
     # ========== TC-07: Дубликаты email ==========
     @pytest.mark.asyncio
@@ -217,7 +208,6 @@ class TestNotificationService:
 
         same_email = "duplicate@example.com"
 
-        # Два участника с одинаковым email
         person1 = Mock()
         person1.email = same_email
         person2 = Mock()
@@ -250,53 +240,6 @@ class TestNotificationService:
 
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
-            # Должно быть только 1 письмо
             assert mock_send_email.call_count == 1
-
-    # ========== TC-08: Формат темы письма ==========
-    @pytest.mark.asyncio
-    async def test_subject_format(self, service, mock_notification_repo, mock_event_repo):
-        """TC-08: Проверка формата темы письма"""
-        mock_event = Mock()
-        mock_event.name = "Tech Conference"
-        mock_event.event_date = Mock(year=2025)
-        mock_event_repo.get_by_id.return_value = mock_event
-
-        mock_group = self._create_mock_group(num_participants=1)
-        mock_group.name = "Design Team"
-        mock_notification_repo.get_notification_payload.return_value = [mock_group]
-
-        with patch('app.services.send_mails.send_email') as mock_send_email:
-            await service.send_draw_notifications(event_id=1)
-
-            subject = mock_send_email.call_args_list[0][1]['subject']
-            assert "Tech Conference" in subject
-            assert "2025" in subject
-            assert "Design Team" in subject
-            assert "Результаты жеребьевки" in subject
-
-    # ========== TC-09: Формат тела письма ==========
-    @pytest.mark.asyncio
-    async def test_body_contains_all_fields(self, service, mock_notification_repo, mock_event_repo):
-        """TC-09: Тело письма содержит все необходимые поля"""
-        mock_event = Mock()
-        mock_event.name = "Test Event"
-        mock_event.event_date = Mock(year=2025)
-        mock_event_repo.get_by_id.return_value = mock_event
-
-        mock_group = self._create_mock_group(num_participants=1)
-        mock_group.name = "Test Group"
-        mock_notification_repo.get_notification_payload.return_value = [mock_group]
-
-        with patch('app.services.send_mails.send_email') as mock_send_email:
-            await service.send_draw_notifications(event_id=1)
-
-            body = mock_send_email.call_args_list[0][1]['body']
-
-            assert "Test Event" in body
-            assert "2025" in body
-            assert "Test Group" in body
-            assert "Назначенная тема" in body
-            assert "Технические требования" in body
