@@ -44,8 +44,12 @@ class GroupInviteService:
 
     async def join_by_token(self, token: str, person_id: int) -> Group:
         payload = self._jwt_service.decode_jwt(token)
+        group_id = payload.get(self.GROUP_ID_KEY)
 
-        group = await self._group_repository.get_group_by_id(payload.get(self.GROUP_ID_KEY))
+        if self.is_participant_exists(group_id=group_id, person_id=person_id):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        group = await self._group_repository.get_group_by_id(group_id)
         participant = await self._participant_repository.create_participant(
             person_id=person_id, section_id=group.section_id, is_group_leader=False
         )
@@ -53,3 +57,9 @@ class GroupInviteService:
         group = await self._group_repository.increment_count(group)
 
         return group
+
+    def is_participant_exists(self, group_id: int, person_id: int) -> bool:
+        participant = await self._group_participant_repository.get_participant_by_group_and_person(
+            group_id=group_id, person_id=person_id
+        )
+        return participant is not None
