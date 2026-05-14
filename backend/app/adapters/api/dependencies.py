@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db_session
 from app.repositories.course import CourseRepository
 from app.repositories.event import EventRepository
-from app.repositories.group import GroupRepository
 from app.repositories.faculty import FacultyRepository
+from app.repositories.group import GroupRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
 from app.repositories.organizer import OrganizerRepository
