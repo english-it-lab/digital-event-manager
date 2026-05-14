@@ -13,8 +13,8 @@ class ParticipantRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def create_participant(self, person_id: int) -> Participant:
-        participant = Participant(person_id=person_id)
+    async def create_participant(self, person_id: int, section_id: int) -> Participant:
+        participant = Participant(person_id=person_id, section_id=section_id)
         self._session.add(participant)
 
         await self._session.flush()
@@ -41,7 +41,7 @@ class ParticipantRepository:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_participant(self, data: ParticipantCreate) -> Participant | None:
+    async def create_full_participant(self, data: ParticipantCreate) -> Participant | None:
         """
         Create a new participant.
         """

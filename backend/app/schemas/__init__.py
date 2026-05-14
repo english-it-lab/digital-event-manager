@@ -663,6 +663,7 @@ __all__ = [
     "TopicRead",
     "GroupBase",
     "GroupCreate",
+    "GroupUpdate",
     "GroupRead",
     "GroupFilter",
     "GroupTopicBase",

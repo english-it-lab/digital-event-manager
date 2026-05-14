@@ -42,7 +42,10 @@ class GroupInviteService:
         payload = self._jwt_service.decode_jwt(token)
 
         group = await self._group_repository.get_group_by_id(payload.get(self.GROUP_ID_KEY))
-        await self._participant_repository.create_participant(person_id)
+        participant = await self._participant_repository.create_participant(
+            person_id=person_id, section_id=group.section_id
+        )
+        await self._group_participant_repository.create_group_participant(group.id, participant.id)
         group = await self._group_repository.increment_count(group)
 
         return group

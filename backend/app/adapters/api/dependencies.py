@@ -184,10 +184,17 @@ def get_participant_repository(session: Annotated[AsyncSession, Depends(get_sess
 
 
 def get_group_service(
-    group_repo: Annotated[GroupRepository, Depends(get_group_repository)],
-    section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
+    group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
+    section_repository: Annotated[SectionRepository, Depends(get_section_repository)],
+    group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
+    participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
 ) -> GroupService:
-    return GroupService(group_repo, section_repo)
+    return GroupService(
+        repository=group_repository,
+        section_repository=section_repository,
+        group_participant_repository=group_participant_repository,
+        participant_repository=participant_repository,
+    )
 
 
 def get_group_invite_service(
