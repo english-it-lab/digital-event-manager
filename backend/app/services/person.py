@@ -25,37 +25,36 @@ class PersonService:
 
         return PersonRead.model_validate(person)
 
-    async def put_person(self, person_id: int, person_payload: PersonUpdate) -> PersonRead:
+    async def put_person(self, person_payload: PersonUpdate) -> PersonRead:
         """
         Put person data
         """
 
         person = Person(**person_payload.model_dump())
-        person.id = person_id
         person = await self._person_repository.put_person(person)
 
         return PersonRead.model_validate(person)
 
-    async def update_person(self, person_id: int, person_payload: PersonUpdate) -> PersonRead:
+    async def update_person(self, person_payload: PersonUpdate) -> PersonRead:
         """
         Update person data, if it exists
         """
-        if await self._person_repository.get_person_by_id(person_id) is None:
+        if await self._person_repository.get_person_by_id(person_payload.id) is None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Person with id {person_id} doesn't exist",
+                detail=f"Person with id {person_payload.id} doesn't exist",
             )
 
-        return PersonRead.model_validate(await self.put_person(person_id, person_payload))
+        return PersonRead.model_validate(await self.put_person(person_payload))
 
-    async def create_person(self, person_id: int, person_payload: PersonUpdate) -> PersonRead:
+    async def create_person(self, person_payload: PersonUpdate) -> PersonRead:
         """
         Create person, if doesn't it exists
         """
-        if await self._person_repository.get_person_by_id(person_id) is None:
+        if await self._person_repository.get_person_by_id(person_payload.id) is None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Person with id {person_id} doesn't exist",
+                detail=f"Person with id {person_payload.id} doesn't exist",
             )
 
-        return PersonRead.model_validate(await self.put_person(person_id, person_payload))
+        return PersonRead.model_validate(await self.put_person(person_payload))

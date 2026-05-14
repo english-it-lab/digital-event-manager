@@ -1,11 +1,11 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from app.adapters.api.v1.AuthAdapter import get_jwt_payload_dep
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app.adapters.api.dependencies import get_person_service
-from app.adapters.api.v1.AuthAdapter import get_jwt_payload_dep
 from app.main import app
 from app.services.jwt import AuthPayload
 

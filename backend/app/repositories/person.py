@@ -24,3 +24,17 @@ class PersonRepository:
         await self._session.commit()
         await self._session.refresh(merged)
         return merged
+
+    async def get_person_by_email(self, email: str) -> Person | None:
+        stmt = select(Person).where(Person.email == email)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create_person(self, email: str) -> Person:
+        person = Person(email=email)
+
+        self._session.add(person)
+
+        await self._session.flush()
+        await self._session.refresh(person)
+        return person

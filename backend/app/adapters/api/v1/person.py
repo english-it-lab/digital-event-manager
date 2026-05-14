@@ -2,10 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.adapters.api.dependencies import get_person_service
-from app.adapters.api.v1.AuthAdapter import get_jwt_payload_dep
-from app.schemas import PersonRead, PersonUpdate
-from app.services.jwt import AuthPayload
+from app.adapters.api.dependencies import get_person_service, get_user_from_jwt
+from app.schemas import PersonMyselfUpdate, PersonRead, PersonUpdate
 from app.services.person import PersonService
 
 router = APIRouter(tags=["person"])
@@ -15,37 +13,43 @@ router = APIRouter(tags=["person"])
 async def put_person(
     payload: PersonUpdate,
     service: Annotated[PersonService, Depends(get_person_service)],
-    auth_payload: Annotated[AuthPayload, Depends(get_jwt_payload_dep)],
+    _person_id: Annotated[int, Depends(get_user_from_jwt)],
 ) -> PersonRead:
-    return await service.put_person(auth_payload.PERSON_ID, payload)
+    return await service.put_person(payload)
 
 
 @router.post("/", response_model=PersonRead, status_code=status.HTTP_200_OK)
 async def create_person(
     payload: PersonUpdate,
     service: Annotated[PersonService, Depends(get_person_service)],
-    auth_payload: Annotated[AuthPayload, Depends(get_jwt_payload_dep)],
+    _person_id: Annotated[int, Depends(get_user_from_jwt)],
 ) -> PersonRead:
-    return await service.create_person(auth_payload.PERSON_ID, payload)
+    return await service.create_person(payload)
 
 
 @router.patch("/", response_model=PersonRead, status_code=status.HTTP_200_OK)
-async def update_person(
-    payload: PersonUpdate,
+async def update_yours_person_data(
+    payload: PersonMyselfUpdate,
     service: Annotated[PersonService, Depends(get_person_service)],
-    auth_payload: Annotated[AuthPayload, Depends(get_jwt_payload_dep)],
+    _person_id: Annotated[int, Depends(get_user_from_jwt)],
 ) -> PersonRead:
-    return await service.update_person(auth_payload.PERSON_ID, payload)
+    data = payload.model_dump()
+    data["id"] = _person_id
+    return await service.update_person(PersonUpdate(**data))
 
 
 @router.get("/", response_model=PersonRead, status_code=status.HTTP_200_OK)
-async def get_person_by_id(payload: int, service: Annotated[PersonService, Depends(get_person_service)]) -> PersonRead:
-    return await service.get_person_by_id(payload)
+async def get_person_by_id(
+    person_id: int,
+    service: Annotated[PersonService, Depends(get_person_service)],
+    _person_id: Annotated[int, Depends(get_user_from_jwt)],
+) -> PersonRead:
+    return await service.get_person_by_id(person_id)
 
 
 @router.get("/me", response_model=PersonRead, status_code=status.HTTP_200_OK)
 async def get_person_data_from_jwt(
     service: Annotated[PersonService, Depends(get_person_service)],
-    auth_payload: Annotated[AuthPayload, Depends(get_jwt_payload_dep)],
+    _person_id: Annotated[int, Depends(get_user_from_jwt)],
 ) -> PersonRead:
-    return await service.get_person_by_id(auth_payload.PERSON_ID)
+    return await service.get_person_by_id(_person_id)

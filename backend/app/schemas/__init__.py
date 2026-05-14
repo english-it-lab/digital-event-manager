@@ -70,6 +70,10 @@ class PersonRead(ORMModelMixin, PersonBase):
 
 
 class PersonUpdate(PersonBase):
+    id: int
+
+
+class PersonMyselfUpdate(PersonBase):
     pass
 
 
@@ -454,6 +458,26 @@ class JuryScoreChangeRead(ORMModelMixin, JuryScoreChangeBase):
     id: int
 
 
+class ScoreHistoryBase(BaseModel):
+    jury_scores_id: int
+    jury_id: int | None = None
+    update_time: datetime | None = None
+
+
+class ScoreHistoryCreate(ScoreHistoryBase):
+    pass
+
+
+class ScoreHistoryRead(ORMModelMixin, ScoreHistoryBase):
+    id: int
+
+
+class ScoreHistoryUpdate(BaseModel):
+    jury_scores_id: int | None = None
+    jury_id: int | None = None
+    update_time: datetime | None = None
+
+
 class JuryProgressItem(BaseModel):
     participant_id: int
     participant_name: str
@@ -549,31 +573,18 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
-class EmailConfirmationRequest(BaseModel):
-    """Request for email confirmation code generation."""
-
+class EmailCodeRequest(BaseModel):
     email: EmailStr
 
 
-class EmailConfirmationResponse(BaseModel):
-    """Response confirming code sent."""
-
-    message: str
-    email_masked: str
-
-
-class EmailVerificationRequest(BaseModel):
-    """Request for email code verification."""
-
+class LoginRequest(BaseModel):
     email: EmailStr
     code: str
 
 
-class EmailVerificationResponse(BaseModel):
-    """Response for email verification result."""
-
-    success: bool
-    message: str
+class LoginResponse(ORMModelMixin, BaseModel):
+    access_token: str
+    token_type: str = "bearer"
 
 
 __all__ = [
@@ -665,8 +676,7 @@ __all__ = [
     "PosterContentRead",
     "PosterContentUpdate",
     "JuryProgressItem",
-    "EmailConfirmationRequest",
-    "EmailConfirmationResponse",
-    "EmailVerificationRequest",
-    "EmailVerificationResponse",
+    "EmailCodeRequest",
+    "LoginRequest",
+    "LoginResponse",
 ]

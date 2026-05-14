@@ -13,7 +13,7 @@ async def create_jwt(
     payload: AuthPayload,
     service: Annotated[JwtService, Depends(get_jwt_service)],
 ) -> str:
-    return await service.create_jwt(payload)
+    return await service.create_jwt_from_payload(payload)
 
 
 @router.get("/decode", response_model=dict, status_code=status.HTTP_200_OK)

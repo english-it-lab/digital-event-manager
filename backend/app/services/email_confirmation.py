@@ -10,7 +10,6 @@ class EmailConfirmationService:
     """Business logic for email confirmation codes."""
 
     CODE_LENGTH = 6
-    TIME_WINDOW_MINUTES = 2  # Time window in minutes
 
     def _generate_code_for_window(self, email: str, time_window_offset: int = 0) -> str:
         """
@@ -27,7 +26,7 @@ class EmailConfirmationService:
             6-digit confirmation code.
         """
         now = datetime.now()
-        minutes = (now.hour * 60 + now.minute) // self.TIME_WINDOW_MINUTES
+        minutes = (now.hour * 60 + now.minute) // settings.email_confirmation_time_window_minutes
         target_minutes = minutes + time_window_offset
         time_window = f"{now.year}{now.month:02d}{now.day:02d}{target_minutes:05d}"
 

@@ -1,7 +1,8 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
@@ -14,6 +15,7 @@ from app.repositories.participant import ParticipantRepository
 from app.repositories.participant_ranking import ParticipantRankingRepository
 from app.repositories.person import PersonRepository
 from app.repositories.poster_content import PosterContentRepository
+from app.repositories.score_history import ScoreHistoryRepository
 from app.repositories.section import SectionRepository
 from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
@@ -21,6 +23,8 @@ from app.repositories.technical_requirement import (
 )
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
+from app.schemas import AuthPayload
+from app.services.auth import AuthService
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.jury import JuryService
@@ -29,6 +33,7 @@ from app.services.jwt import JwtService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.person import PersonService
 from app.services.poster_content import PosterContentService
+from app.services.score_history import ScoreHistoryService
 from app.services.section import SectionService
 from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
@@ -91,6 +96,19 @@ def get_jury_score_service(
         participant_repository=participant_repo,
         jury_repository=jury_repo,
         section_jury_repository=section_jury_repo,
+    )
+
+
+def get_score_history_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ScoreHistoryService:
+    score_history_repo = ScoreHistoryRepository(session)
+    jury_score_repo = JuryScoreRepository(session)
+    jury_repo = JuryRepository(session)
+    return ScoreHistoryService(
+        score_history_repository=score_history_repo,
+        jury_score_repository=jury_score_repo,
+        jury_repository=jury_repo,
     )
 
 
@@ -162,3 +180,50 @@ def get_group_service(
     section_repo: Annotated[SectionRepository, Depends(get_section_repository)],
 ) -> GroupService:
     return GroupService(group_repo, section_repo)
+
+
+def get_auth_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AuthService:
+    email_service = get_email_confirmation_service()
+    jwt_service = get_jwt_service()
+    person_repository = PersonRepository(session)
+    return AuthService(email_service, jwt_service, person_repository)
+
+
+security = HTTPBearer()
+
+
+async def get_jwt_payload(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
+) -> AuthPayload:
+    no_bearer_token_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No bearer token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    invalid_jwt_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    if not credentials or credentials.scheme.lower() != "bearer":
+        raise no_bearer_token_exception
+
+    jwt_token = credentials.credentials
+
+    try:
+        payload = await jwt_service.decode_jwt(jwt_token)
+    except Exception:
+        raise invalid_jwt_exception from None
+
+    return payload
+
+
+async def get_user_from_jwt(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
+) -> int:
+    return (await get_jwt_payload(credentials, jwt_service)).PERSON_ID
