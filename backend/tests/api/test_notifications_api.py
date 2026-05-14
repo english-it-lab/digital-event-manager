@@ -26,9 +26,10 @@ class TestNotificationsAPI:
 
     # ========== TC-01: Успешная отправка ==========
     def test_tc01_send_notifications_success(self, client):
-        with patch("app.adapters.api.v1.notifications.AsyncSessionMaker"), patch(
-            "app.services.notification.NotificationService"
-        ) as MockService:
+        with (
+            patch("app.adapters.api.v1.notifications.AsyncSessionMaker"),
+            patch("app.services.notification.NotificationService") as MockService,
+        ):
             mock_service = AsyncMock()
             MockService.return_value = mock_service
             mock_service.send_draw_notifications = AsyncMock()
@@ -37,9 +38,10 @@ class TestNotificationsAPI:
 
     # ========== TC-02: Отправка без уведомлений ==========
     def test_tc02_send_notifications_no_recipients(self, client):
-        with patch("app.adapters.api.v1.notifications.AsyncSessionMaker"), patch(
-            "app.services.notification.NotificationService"
-        ) as MockService:
+        with (
+            patch("app.adapters.api.v1.notifications.AsyncSessionMaker"),
+            patch("app.services.notification.NotificationService") as MockService,
+        ):
             mock_service = AsyncMock()
             MockService.return_value = mock_service
             mock_service.send_draw_notifications = AsyncMock()
@@ -48,14 +50,13 @@ class TestNotificationsAPI:
 
     # ========== TC-03: Event не найден ==========
     def test_tc03_event_not_found(self, client):
-        with patch("app.adapters.api.v1.notifications.AsyncSessionMaker"), patch(
-            "app.services.notification.NotificationService"
-        ) as MockService:
+        with (
+            patch("app.adapters.api.v1.notifications.AsyncSessionMaker"),
+            patch("app.services.notification.NotificationService") as MockService,
+        ):
             mock_service = AsyncMock()
             MockService.return_value = mock_service
-            mock_service.send_draw_notifications = AsyncMock(
-                side_effect=ValueError("Event with id 999 not found")
-            )
+            mock_service.send_draw_notifications = AsyncMock(side_effect=ValueError("Event with id 999 not found"))
             response = client.post("/api/v1/notifications/draw/results", json={"eventId": 999})
             assert response.status_code in [200, 404, 422]
 
