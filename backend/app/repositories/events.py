@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Event, Organizer, Venue
+from app.models import Event, Organizer
 from app.schemas import EventCreate
 
 

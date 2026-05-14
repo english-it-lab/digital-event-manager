@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from datetime import datetime
 from io import BytesIO
@@ -6,6 +7,8 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     PageBreak,
     Paragraph,
@@ -15,14 +18,19 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+# Register DejaVu fonts for Cyrillic support
+_FONT_DIR = "/usr/share/fonts/ttf/dejavu"
+if os.path.isdir(_FONT_DIR):
+    pdfmetrics.registerFont(TTFont("DejaVu", os.path.join(_FONT_DIR, "DejaVuSans.ttf")))
+    pdfmetrics.registerFont(TTFont("DejaVuBold", os.path.join(_FONT_DIR, "DejaVuSans-Bold.ttf")))
+    FONT = "DejaVu"
+    FONT_BOLD = "DejaVuBold"
+else:
+    FONT = "Helvetica"
+    FONT_BOLD = "Helvetica-Bold"
+
 BLUE = colors.HexColor("#2C3E50")
 LIGHT_BLUE = colors.HexColor("#3498DB")
-LIGHT_GRAY = colors.HexColor("#F0F0F0")
-
-
-def _build_full_name(first_name, last_name, middle_name):
-    parts = [p for p in [last_name, first_name, middle_name] if p]
-    return " ".join(parts)
 
 
 class PDFGeneratorService:
@@ -32,7 +40,7 @@ class PDFGeneratorService:
             f"Custom{parent}",
             parent=parent,
             fontSize=font_size,
-            fontName="Helvetica-Bold" if bold else "Helvetica",
+            fontName=FONT_BOLD if bold else FONT,
             spaceAfter=space_after,
             alignment=alignment,
         )
@@ -54,19 +62,15 @@ class PDFGeneratorService:
         committee = program_data.get("committee", [])
         sections = program_data.get("sections", [])
 
-        # --- TITLE PAGE ---
         self._build_title_page(story, styles, event)
         story.append(PageBreak())
 
-        # --- COMMITTEE ---
         self._build_committee(story, styles, event, committee)
         story.append(PageBreak())
 
-        # --- SCHEDULE TABLE ---
         self._build_schedule(story, styles, sections)
         story.append(PageBreak())
 
-        # --- SECTIONS (ENGLISH) ---
         panel_sections = [s for s in sections if s.get("section_type") != "poster_session"]
         poster_sections = [s for s in sections if s.get("section_type") == "poster_session"]
 
@@ -82,7 +86,6 @@ class PDFGeneratorService:
                 self._build_section(story, styles, section)
                 story.append(PageBreak())
 
-        # --- SECTIONS (RUSSIAN COMPACT) ---
         self._build_russian_sections(story, styles, sections)
 
         doc.build(story)
@@ -93,8 +96,7 @@ class PDFGeneratorService:
         centered = self._make_title_style(styles["Normal"], font_size=14, bold=True, space_after=8)
         lg_centered = self._make_title_style(styles["Normal"], font_size=16, bold=True, space_after=12)
 
-        story.append(Paragraph("САРАТОВСКИЙ НАЦИОНАЛЬНЫЙ ИССЛЕДОВАТЕЛЬСКИЙ", centered))
-        story.append(Paragraph("ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ ИМЕНИ Н.Г. ЧЕРНЫШЕВСКОГО", centered))
+        story.append(Paragraph("НАЦИОНАЛЬНЫЙ ИССЛЕДОВАТЕЛЬСКИЙ УНИВЕРСИТЕТ", centered))
         story.append(Spacer(1, 30))
 
         event_name = event.get("name", "")
@@ -129,21 +131,8 @@ class PDFGeneratorService:
         for m in committee:
             grouped[m.get("committee_type", "organizing")].append(m)
 
-        body_style = ParagraphStyle(
-            "CommitteeBody",
-            parent=styles["Normal"],
-            fontSize=11,
-            spaceAfter=6,
-            leading=14,
-        )
-        label_style = ParagraphStyle(
-            "CommitteeLabel",
-            parent=styles["Normal"],
-            fontSize=11,
-            fontName="Helvetica-Bold",
-            spaceAfter=4,
-            spaceBefore=10,
-        )
+        body_style = ParagraphStyle("CommitteeBody", parent=styles["Normal"], fontName=FONT, fontSize=11, spaceAfter=6, leading=14)
+        label_style = ParagraphStyle("CommitteeLabel", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=11, spaceAfter=4, spaceBefore=10)
 
         for ctype in ["organizing", "program"]:
             members = grouped.get(ctype, [])
@@ -182,6 +171,9 @@ class PDFGeneratorService:
         story.append(Paragraph("SCHEDULE", title_style))
         story.append(Spacer(1, 10))
 
+        cell_style = ParagraphStyle("SchedCell", parent=styles["Normal"], fontName=FONT, fontSize=9)
+        header_style = ParagraphStyle("SchedHeader", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=9)
+
         rows = []
         current_date = None
         for s in sections:
@@ -199,23 +191,26 @@ class PDFGeneratorService:
 
             if date_str and date_str != current_date:
                 current_date = date_str
-                rows.append([Paragraph(f"<b>{date_str}</b>", styles["Normal"]), "", ""])
+                rows.append([Paragraph(f"<b>{date_str}</b>", cell_style), "", ""])
 
             name = s.get("name", "")
             hall = s.get("lecture_hall", "")
 
-            rows.append([time_fmt, Paragraph(name, styles["Normal"]), hall])
+            rows.append([time_fmt, Paragraph(name, cell_style), hall])
 
         if not rows:
             return
 
-        table_data = [[Paragraph("<b>Time</b>", styles["Normal"]), Paragraph("<b>Section</b>", styles["Normal"]), Paragraph("<b>Room</b>", styles["Normal"])]] + rows
+        table_data = [
+            [Paragraph("<b>Time</b>", header_style), Paragraph("<b>Section</b>", header_style), Paragraph("<b>Room</b>", header_style)]
+        ] + rows
         col_widths = [3.5 * cm, 10 * cm, 4 * cm]
         table = Table(table_data, colWidths=col_widths)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTNAME", (0, 0), (-1, 0), FONT_BOLD),
+            ("FONTNAME", (0, 1), (-1, -1), FONT),
             ("FONTSIZE", (0, 0), (-1, -1), 9),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -242,12 +237,7 @@ class PDFGeneratorService:
             title_text += f" ({hall})"
 
         section_title = ParagraphStyle(
-            "SectionTitle",
-            parent=styles["Heading2"],
-            fontSize=13,
-            fontName="Helvetica-Bold",
-            textColor=BLUE,
-            spaceAfter=6,
+            "SectionTitle", parent=styles["Heading2"], fontName=FONT_BOLD, fontSize=13, textColor=BLUE, spaceAfter=6,
         )
         story.append(Paragraph(title_text, section_title))
 
@@ -259,18 +249,13 @@ class PDFGeneratorService:
             except (ValueError, TypeError):
                 date_display = time_str
 
-        info_style = ParagraphStyle(
-            "SectionInfo",
-            parent=styles["Normal"],
-            fontSize=10,
-            spaceAfter=4,
-        )
+        info_style = ParagraphStyle("SectionInfo", parent=styles["Normal"], fontName=FONT, fontSize=10, spaceAfter=4)
+
         if date_display:
             story.append(Paragraph(date_display, info_style))
         if time_limit:
             story.append(Paragraph(f"Time-limit: {time_limit} minutes", info_style))
 
-        # Jury
         juries = section.get("juries", [])
         if juries:
             story.append(Spacer(1, 6))
@@ -291,7 +276,6 @@ class PDFGeneratorService:
 
         story.append(Spacer(1, 12))
 
-        # Participants
         participants = section.get("participants", [])
         for idx, p in enumerate(participants, 1):
             name = p.get("full_name", "")
@@ -300,11 +284,7 @@ class PDFGeneratorService:
             advisor = p.get("scientific_advisor")
 
             participant_style = ParagraphStyle(
-                f"Part{idx}",
-                parent=styles["Normal"],
-                fontSize=10,
-                spaceAfter=4,
-                leading=13,
+                f"Part{idx}", parent=styles["Normal"], fontName=FONT, fontSize=10, spaceAfter=4, leading=13,
             )
 
             story.append(Paragraph(f"{idx}. {name}", participant_style))
@@ -332,23 +312,14 @@ class PDFGeneratorService:
             return
 
         title_style = self._make_title_style(styles["Heading1"], font_size=14, space_after=20, alignment=1)
-        story.append(Paragraph("СЕКЦИИ (русский)", title_style))
+        story.append(Paragraph("СЕКЦИИ", title_style))
         story.append(Spacer(1, 10))
 
         section_style = ParagraphStyle(
-            "RuSection",
-            parent=styles["Normal"],
-            fontSize=11,
-            fontName="Helvetica-Bold",
-            spaceAfter=6,
-            spaceBefore=10,
+            "RuSection", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=11, spaceAfter=6, spaceBefore=10,
         )
         part_style = ParagraphStyle(
-            "RuParticipant",
-            parent=styles["Normal"],
-            fontSize=10,
-            spaceAfter=3,
-            leftIndent=20,
+            "RuParticipant", parent=styles["Normal"], fontName=FONT, fontSize=10, spaceAfter=3, leftIndent=20,
         )
 
         for section in sections:
