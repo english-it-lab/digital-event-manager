@@ -1,17 +1,28 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from app.adapters.api.v1.AuthAdapter import get_jwt_payload_dep
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from app.adapters.api.dependencies import get_person_service
+from app.adapters.api.dependencies import get_person_service, get_user_from_jwt
 from app.main import app
-from app.services.jwt import AuthPayload
 
 client = TestClient(app)
 
-mock_person_data = {
+mock_person_update_full = {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "title": "Mr.",
+    "position": "Senior Engineer",
+}
+
+mock_myself_update = {
+    "position": "Lead Engineer",
+}
+
+mock_person_read = {
     "id": 1,
     "first_name": "John",
     "last_name": "Doe",
@@ -24,103 +35,91 @@ mock_person_data = {
     "tg_name": "@johndoe",
 }
 
-mock_person_update = {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com",
-    "title": "Mr.",
-    "position": "Senior Engineer",
-}
-
 
 @pytest.fixture
 def mock_person_service():
     service = MagicMock()
-
-    service.get_person_by_id = AsyncMock(return_value=mock_person_data)
-    service.put_person = AsyncMock(return_value=mock_person_data)
-    service.update_person = AsyncMock(return_value=mock_person_data)
-    service.create_person = AsyncMock(return_value=mock_person_data)
-
+    service.get_person_by_id = AsyncMock(return_value=mock_person_read)
+    service.put_person = AsyncMock(return_value=mock_person_read)
+    service.update_person = AsyncMock(return_value=mock_person_read)
+    service.create_person = AsyncMock(return_value=mock_person_read)
     return service
 
 
 @pytest.fixture
-def mock_auth_payload():
-    return AuthPayload(
-        PERSON_ID=1,
-        EXPIRATION_DATE=9999999999,  # далеко в будущем
-    )
+def mock_user_id():
+    return 1  # get_user_from_jwt returns int
 
 
 @pytest.fixture(autouse=True)
-def override_dependencies(mock_person_service, mock_auth_payload):
+def override_dependencies(mock_person_service, mock_user_id):
+    # Override the actual dependencies used in the router
     app.dependency_overrides[get_person_service] = lambda: mock_person_service
-    app.dependency_overrides[get_jwt_payload_dep] = lambda: mock_auth_payload
+    app.dependency_overrides[get_user_from_jwt] = lambda: mock_user_id
     yield
     app.dependency_overrides.clear()
 
 
-# ---------- Тесты для PUT /person ----------
+# ---------- PUT /person ----------
 def test_put_person_success(mock_person_service):
-    """Тест успешного обновления/создания пользователя (PUT)"""
-    response = client.put("/person/", json=mock_person_update)
-
+    response = client.put("/person/", json=mock_person_update_full)
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    assert response.json()["first_name"] == "John"
-    mock_person_service.put_person.assert_called_once_with(1, mock_person_update)
+
+    call_args = mock_person_service.put_person.call_args
+    assert call_args is not None
+    arg = call_args[0][0]
+    assert arg.id == 1
+    assert arg.email == "john@example.com"
 
 
-def test_put_person_unauthorized(mock_person_service, mock_auth_payload):
-    """Тест PUT без авторизации (переопределяем зависимость на исключение)"""
-
+def test_put_person_unauthorized(mock_person_service):
     async def raise_401():
         raise HTTPException(status_code=401, detail="missing token")
 
-    app.dependency_overrides[get_jwt_payload_dep] = raise_401
-    response = client.put("/person/", json=mock_person_update)
+    app.dependency_overrides[get_user_from_jwt] = raise_401
+    response = client.put("/person/", json=mock_person_update_full)
     assert response.status_code == 401
     mock_person_service.put_person.assert_not_called()
-    app.dependency_overrides[get_jwt_payload_dep] = lambda: mock_auth_payload
+    app.dependency_overrides[get_user_from_jwt] = lambda: 1
 
 
-# ---------- Тесты для POST /person ----------
+# ---------- POST /person ----------
 def test_create_person_success(mock_person_service):
-    """Тест успешного создания пользователя (POST)"""
-    response = client.post("/person/", json=mock_person_update)
-
+    response = client.post("/person/", json=mock_person_update_full)
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    mock_person_service.create_person.assert_called_once_with(1, mock_person_update)
+
+    call_args = mock_person_service.create_person.call_args
+    assert call_args is not None
+    arg = call_args[0][0]
+    assert arg.id == 1
+    assert arg.first_name == "John"
 
 
 def test_create_person_conflict(mock_person_service):
-    """Тест создания уже существующего пользователя (409 Conflict)"""
-    from fastapi import HTTPException
-
     mock_person_service.create_person = AsyncMock(
         side_effect=HTTPException(status_code=409, detail="Person with id 1 doesn't exist")
     )
-    response = client.post("/person/", json=mock_person_update)
+    response = client.post("/person/", json=mock_person_update_full)
     assert response.status_code == 409
     assert "doesn't exist" in response.json()["detail"]
 
 
-# ---------- Тесты для PATCH /person ----------
+# ---------- PATCH /person ----------
 def test_update_person_success(mock_person_service):
-    """Тест частичного обновления данных пользователя"""
-    response = client.patch("/person/", json={"position": "Lead Engineer"})
-
+    response = client.patch("/person/", json=mock_myself_update)
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    called_args = mock_person_service.update_person.call_args
-    assert called_args[0][0] == 1  # person_id
-    assert called_args[0][1] == {"position": "Lead Engineer"}  # payload
+
+    call_args = mock_person_service.update_person.call_args
+    assert call_args is not None
+    arg = call_args[0][0]
+    assert arg.id == 1
+    assert arg.position == "Lead Engineer"
 
 
 def test_update_person_not_found(mock_person_service):
-    """Тест обновления несуществующего пользователя (409 Conflict)"""
     mock_person_service.update_person = AsyncMock(
         side_effect=HTTPException(status_code=409, detail="Person with id 1 doesn't exist")
     )
@@ -128,18 +127,15 @@ def test_update_person_not_found(mock_person_service):
     assert response.status_code == 409
 
 
-# ---------- Тесты для GET /person (по query-параметру) ----------
+# ---------- GET /person (by query param) ----------
 def test_get_person_by_id_success(mock_person_service):
-    """Тест получения пользователя по ID через query-параметр"""
     response = client.get("/person/?person_id=1")
-
     assert response.status_code == 200
     assert response.json()["id"] == 1
     mock_person_service.get_person_by_id.assert_called_once_with(1)
 
 
 def test_get_person_by_id_not_found(mock_person_service):
-    """Тест получения несуществующего пользователя"""
     mock_person_service.get_person_by_id = AsyncMock(
         side_effect=HTTPException(status_code=404, detail="Person with id 999 not found")
     )
@@ -148,18 +144,15 @@ def test_get_person_by_id_not_found(mock_person_service):
     assert "not found" in response.json()["detail"]
 
 
-# ---------- Тесты для GET /person/me ----------
-def test_get_me_success(mock_person_service, mock_auth_payload):
-    """Тест получения данных текущего пользователя из JWT"""
+# ---------- GET /person/me ----------
+def test_get_me_success(mock_person_service, mock_user_id):
     response = client.get("/person/me")
-
     assert response.status_code == 200
     assert response.json()["id"] == 1
-    mock_person_service.get_person_by_id.assert_called_once_with(mock_auth_payload.PERSON_ID)
+    mock_person_service.get_person_by_id.assert_called_once_with(mock_user_id)
 
 
 def test_get_me_not_found(mock_person_service):
-    """Тест: пользователь из JWT не найден в БД"""
     mock_person_service.get_person_by_id = AsyncMock(
         side_effect=HTTPException(status_code=404, detail="Person not found")
     )
@@ -168,11 +161,10 @@ def test_get_me_not_found(mock_person_service):
 
 
 def test_get_me_unauthorized():
-    """Тест запроса /me без авторизации"""
-
     async def raise_401():
         raise HTTPException(status_code=401, detail="missing token")
 
-    app.dependency_overrides[get_jwt_payload_dep] = raise_401
+    app.dependency_overrides[get_user_from_jwt] = raise_401
     response = client.get("/person/me")
     assert response.status_code == 401
+    app.dependency_overrides[get_user_from_jwt] = lambda: 1
