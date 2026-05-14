@@ -227,6 +227,11 @@ class GroupFilter(BaseModel):
     status: GroupStatus | None = Field(default=None, alias="group-status")
 
 
+class InviteTokenResponse(BaseModel):
+    token: str = Field(description="Токен приглашения")
+    expired_at: datetime = Field(description="Время жизни токена")
+
+
 class GroupTopicBase(BaseModel):
     group_id: int
     topic_id: int | None = None
@@ -658,11 +663,13 @@ __all__ = [
     "TopicRead",
     "GroupBase",
     "GroupCreate",
+    "GroupUpdate",
     "GroupRead",
     "GroupFilter",
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
+    "InviteTokenResponse",
     "TeacherBase",
     "TeacherCreate",
     "TeacherRead",

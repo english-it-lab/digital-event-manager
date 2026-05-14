@@ -2,10 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.adapters.api.dependencies import get_group_service
+from app.adapters.api.dependencies import get_current_user, get_group_invite_service, get_group_service
 from app.models import Group
-from app.schemas import GroupCreate, GroupFilter, GroupRead, GroupUpdate
+from app.schemas import GroupCreate, GroupFilter, GroupRead, GroupUpdate, InviteTokenResponse
 from app.services.group import GroupService
+from app.services.group_invites import GroupInviteService
 
 router = APIRouter(tags=["groups"])
 
@@ -39,8 +40,9 @@ async def get_group(
 async def create_group(
     payload: GroupCreate,
     service: Annotated[GroupService, Depends(get_group_service)],
+    person_id: Annotated[int, Depends(get_current_user)],
 ) -> GroupRead:
-    result = await service.create_group(payload)
+    result = await service.create_group(payload=payload, person_id=person_id)
 
     match result:
         case Group() as group:
@@ -139,3 +141,22 @@ async def reject_group(
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be PENDING"
             )
+
+
+@router.post("/{group-id}/invite-token")
+async def invite_token(
+    group_id: int,
+    person_id: Annotated[int, Depends(get_current_user)],
+    service: Annotated[GroupInviteService, Depends(get_group_invite_service)],
+) -> InviteTokenResponse:
+    return await service.create_invite_token(group_id=group_id, person_id=person_id)
+
+
+@router.post("/join/{token}")
+async def join_by_token(
+    token: str,
+    person_id: Annotated[int, Depends(get_current_user)],
+    service: Annotated[GroupInviteService, Depends(get_group_invite_service)],
+) -> GroupRead:
+    group = await service.join_by_token(token=token, person_id=person_id)
+    return GroupRead.model_validate(group)

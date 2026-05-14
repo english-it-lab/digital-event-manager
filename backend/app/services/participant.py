@@ -52,7 +52,7 @@ class ParticipantService:
         """
         if data.person_id is None or data.person_id == 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Person id cannot be null or empty")
-        return await self._repository.create_participant(data)
+        return await self._repository.create_full_participant(data)
 
     async def update_participant(self, participant_id: int, data: ParticipantUpdate) -> Participant:
         """
