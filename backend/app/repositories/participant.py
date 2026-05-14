@@ -38,6 +38,7 @@ class ParticipantRepository:
         Create a new participant.
         """
         participant = Participant(
+            person_id=data.person_id,
             faculty_id=data.faculty_id,
             course_id=data.course_id,
             teacher_id=data.teacher_id,
