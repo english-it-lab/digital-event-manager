@@ -6,7 +6,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
+from app.repositories.course import CourseRepository
 from app.repositories.event import EventRepository
+from app.repositories.faculty import FacultyRepository
 from app.repositories.group import GroupRepository
 from app.repositories.jury import JuryRepository
 from app.repositories.jury_score import JuryScoreRepository
@@ -18,9 +20,11 @@ from app.repositories.poster_content import PosterContentRepository
 from app.repositories.score_history import ScoreHistoryRepository
 from app.repositories.section import SectionRepository
 from app.repositories.section_jury import SectionJuryRepository
+from app.repositories.teacher import TeacherRepository
 from app.repositories.technical_requirement import (
     TechnicalRequirementRepository,
 )
+from app.repositories.textbook_level import TextbookLevelRepository
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.schemas import AuthPayload
@@ -30,6 +34,7 @@ from app.services.group import GroupService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
+from app.services.participant import ParticipantService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.person import PersonService
 from app.services.poster_content import PosterContentService
@@ -227,3 +232,24 @@ async def get_user_from_jwt(
     jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
 ) -> int:
     return (await get_jwt_payload(credentials, jwt_service)).PERSON_ID
+
+
+def get_participant_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ParticipantService:
+    repository = ParticipantRepository(session)
+    faculty_repository = FacultyRepository(session)
+    course_repository = CourseRepository(session)
+    teacher_repository = TeacherRepository(session)
+    section_repository = SectionRepository(session)
+    person_repository = PersonRepository(session)
+    textbook_level_repository = TextbookLevelRepository(session)
+    return ParticipantService(
+        repository=repository,
+        faculty_repository=faculty_repository,
+        course_repository=course_repository,
+        teacher_repository=teacher_repository,
+        section_repository=section_repository,
+        person_repository=person_repository,
+        textbook_level_repository=textbook_level_repository,
+    )

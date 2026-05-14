@@ -201,8 +201,91 @@ paths:
         "404":
           description: Группа не найдена
 
-  # ------------------------------------------------------------------ #
-  # 4. Приглашения в группу (токены)                                   #
+        # ------------------------------------------------------------------ #
+        # 3. Группы                                                          #
+        # ------------------------------------------------------------------ #
+    /groups:
+        post:
+            tags: [ Groups ]
+            summary: Создать группу и стать её лидером
+            description: |
+                Создаёт запись в `groups` без привязки к секции (`section_id = NULL`,
+                `registration_time = NULL`, `name`, `member_count = 1`), добавляет
+                создателя в `group_participants` и выставляет
+                `participants.is_group_leader = true` для текущего участника.
+                Секция и время регистрации в секции выставляются позже —
+                в момент подачи заявки на участие (см. `/section-applications`).
+            operationId: createGroup
+            security:
+                -   bearerAuth: [ ]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/GroupCreateRequest"
+            responses:
+                "201":
+                    description: Группа создана
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Group"
+                "400":
+                    description: Некорректные данные
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    description: Требуется авторизация
+                "409":
+                    description: Участник уже состоит в другой группе
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    # ------------------------------------------------------------------ #
+    # 4. Participants                                                    #
+    # ------------------------------------------------------------------ #
+
+    /participants:
+        post:
+            tags: [ Participants ]
+            summary: Создать участника
+            description: |
+                ...
+            operationId: createParticipant
+            security:
+                -   bearerAuth: [ ]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ParticipantCreateRequest"
+            responses:
+                "201":
+                    description: Участник создан
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Participant"
+                "400":
+                    description: Некорректные данные
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    description: Требуется авторизация
+
+
+
+
+      # ------------------------------------------------------------------ #
+  # 5. Приглашения в группу (токены)                                   #
   # ------------------------------------------------------------------ #
   /groups/{groupId}/invite-token:
     post:
@@ -268,7 +351,7 @@ paths:
           description: Группа не найдена или токен недействителен
 
   # ------------------------------------------------------------------ #
-  # 5. Заявки группы на секцию мероприятия                             #
+  # 6. Заявки группы на секцию мероприятия                             #
   # ------------------------------------------------------------------ #
   /section-applications:
     post:
