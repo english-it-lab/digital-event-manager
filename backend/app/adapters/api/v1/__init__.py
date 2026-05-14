@@ -5,6 +5,7 @@ from app.adapters.api.v1 import (
     juries,
     participant_rankings,
     participant_scores,
+    person,
     participants,
     poster_contents,
     score_history,
@@ -35,6 +36,7 @@ router.include_router(participants.router, prefix="/participants")
 router.include_router(sections.router, prefix="/sections")
 router.include_router(section_juries.router, prefix="/section-juries")
 router.include_router(groups.router, prefix="/groups")
+router.include_router(person.router, prefix="/person")
 router.include_router(draw_router)
 router.include_router(draw_results_router)
 router.include_router(topics_router)

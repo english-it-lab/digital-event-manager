@@ -69,12 +69,28 @@ class PersonBase(BaseModel):
     tg_name: str | None = None
 
 
-class PersonCreate(PersonBase):
+class PersonRead(ORMModelMixin, PersonBase):
+    id: int
+
+
+class PersonUpdate(PersonBase):
+    id: int
+
+
+class PersonMyselfUpdate(PersonBase):
     pass
 
 
-class PersonRead(ORMModelMixin, PersonBase):
-    id: int
+class JwtFields(StrEnum):
+    PERSON_ID = "PERSON_ID"
+    EXPIRATION_DATE = "EXPIRATION_DATE"
+
+
+class AuthPayload(BaseModel):
+    PERSON_ID: int
+    EXPIRATION_DATE: int
+
+    model_config = {"extra": "forbid"}
 
 
 class OrganizerBase(BaseModel):
