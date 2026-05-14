@@ -221,8 +221,8 @@ async def get_jwt_payload(
 
     try:
         payload = await jwt_service.decode_jwt(jwt_token)
-    except Exception:
-        raise invalid_jwt_exception from None
+    except Exception as exc:
+        raise invalid_jwt_exception from exc
 
     return payload
 

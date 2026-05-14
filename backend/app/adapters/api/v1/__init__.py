@@ -15,7 +15,6 @@ from app.adapters.api.v1 import (
     universities,
     sections,
     groups,
-    jwts,
 )
 from app.adapters.api.v1.draw import DrawApiImpl
 from app.adapters.api.v1.draw_results import DrawResultsApiImpl
@@ -38,7 +37,6 @@ router.include_router(sections.router, prefix="/sections")
 router.include_router(section_juries.router, prefix="/section-juries")
 router.include_router(groups.router, prefix="/groups")
 router.include_router(person.router, prefix="/person")
-router.include_router(jwts.router, prefix="/jwts")
 router.include_router(draw_router)
 router.include_router(draw_results_router)
 router.include_router(topics_router)

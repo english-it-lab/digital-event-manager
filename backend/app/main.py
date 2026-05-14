@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 
-from app.adapters.api.swagger import configure_openapi
 from app.adapters.api.v1 import router as api_v1_router
 from app.core.config import settings
 
