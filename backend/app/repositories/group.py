@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enums.group import GroupStatus
-from app.models import Group
+from app.models import Group, GroupParticipant, Participant
 from app.schemas import GroupFilter, GroupUpdate
 
 
@@ -83,3 +83,15 @@ class GroupRepository:
         await self._session.refresh(group)
 
         return group
+
+    async def is_leader(self, group_id: int, user_id: int) -> bool:
+        stmt = (
+            select(GroupParticipant)
+            .where(GroupParticipant.group_id == group_id)
+            .join(Participant, GroupParticipant.participant_id == Participant.id)
+            .where(Participant.person_id == user_id)
+            .where(Participant.is_group_leader == True)
+        )
+        
+        result = await self._session.execute(stmt)
+        return result.scalar() is not None

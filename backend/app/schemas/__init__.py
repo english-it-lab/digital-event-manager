@@ -648,5 +648,5 @@ __all__ = [
     "JuryProgressItem",
     "EmailCodeRequest",
     "LoginRequest",
-    "LoginResponse",
+    "LoginResponse"
 ]

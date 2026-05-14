@@ -170,6 +170,7 @@ def get_group_service(
     return GroupService(group_repo, section_repo)
 
 
+<<<<<<< HEAD
 def get_group_invite_service(
     jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
     group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
@@ -184,6 +185,8 @@ def get_group_invite_service(
     )
 
 
+=======
+>>>>>>> main
 def get_auth_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AuthService:

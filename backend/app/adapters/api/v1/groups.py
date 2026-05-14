@@ -57,15 +57,17 @@ async def create_group(
 async def update_group(
     group_id: int, payload: GroupUpdate, service: Annotated[GroupService, Depends(get_group_service)]
 ) -> GroupRead:
-    group = await service.update_group(group_id, payload)
+    result = await service.update_group(group_id, payload)
 
-    if group is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Group with id {group_id} is not found",
-        )
+    match result:
+        case "NOT_FOUND":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
-    return GroupRead.model_validate(group)
+        case "NOT_LEADER":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
+
+        case Group() as group:
+            return GroupRead.model_validate(group)
 
 
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -73,13 +75,17 @@ async def delete_group(
     group_id: int,
     service: Annotated[GroupService, Depends(get_group_service)],
 ) -> None:
-    group = await service.delete_group(group_id)
+    result = await service.delete_group(group_id)
 
-    if group is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Group with id {group_id} not found",
-        )
+    match result:
+        case "NOT_FOUND":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
+
+        case "NOT_LEADER":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
+
+        case "GOOD":
+            pass
 
 
 @router.post("/{group_id}/submit")
@@ -95,6 +101,9 @@ async def submit_group(
 
         case "NOT_FOUND":
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
+
+        case "NOT_LEADER":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
@@ -116,6 +125,9 @@ async def approve_group(
         case "NOT_FOUND":
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
+        case "NOT_ORGANIZER":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only organizer can approve group")
+
         case "TRANSITION_ERROR":
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be PENDING"
@@ -135,6 +147,9 @@ async def reject_group(
 
         case "NOT_FOUND":
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
+
+        case "NOT_ORGANIZER":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only organizer can reject group")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
