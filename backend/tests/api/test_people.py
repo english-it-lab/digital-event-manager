@@ -48,21 +48,20 @@ def mock_person_service():
 
 @pytest.fixture
 def mock_user_id():
-    return 1  # get_user_from_jwt returns int
+    return 1
 
 
 @pytest.fixture(autouse=True)
 def override_dependencies(mock_person_service, mock_user_id):
-    # Override the actual dependencies used in the router
     app.dependency_overrides[get_person_service] = lambda: mock_person_service
     app.dependency_overrides[get_user_from_jwt] = lambda: mock_user_id
     yield
     app.dependency_overrides.clear()
 
 
-# ---------- PUT /person ----------
+# ---------- PUT /api/v1/person ----------
 def test_put_person_success(mock_person_service):
-    response = client.put("/person/", json=mock_person_update_full)
+    response = client.put("/api/v1/person/", json=mock_person_update_full)
     assert response.status_code == 200
     assert response.json()["id"] == 1
 
@@ -78,15 +77,15 @@ def test_put_person_unauthorized(mock_person_service):
         raise HTTPException(status_code=401, detail="missing token")
 
     app.dependency_overrides[get_user_from_jwt] = raise_401
-    response = client.put("/person/", json=mock_person_update_full)
+    response = client.put("/api/v1/person/", json=mock_person_update_full)
     assert response.status_code == 401
     mock_person_service.put_person.assert_not_called()
     app.dependency_overrides[get_user_from_jwt] = lambda: 1
 
 
-# ---------- POST /person ----------
+# ---------- POST /api/v1/person ----------
 def test_create_person_success(mock_person_service):
-    response = client.post("/person/", json=mock_person_update_full)
+    response = client.post("/api/v1/person/", json=mock_person_update_full)
     assert response.status_code == 200
     assert response.json()["id"] == 1
 
@@ -101,14 +100,14 @@ def test_create_person_conflict(mock_person_service):
     mock_person_service.create_person = AsyncMock(
         side_effect=HTTPException(status_code=409, detail="Person with id 1 doesn't exist")
     )
-    response = client.post("/person/", json=mock_person_update_full)
+    response = client.post("/api/v1/person/", json=mock_person_update_full)
     assert response.status_code == 409
     assert "doesn't exist" in response.json()["detail"]
 
 
-# ---------- PATCH /person ----------
+# ---------- PATCH /api/v1/person ----------
 def test_update_person_success(mock_person_service):
-    response = client.patch("/person/", json=mock_myself_update)
+    response = client.patch("/api/v1/person/", json=mock_myself_update)
     assert response.status_code == 200
     assert response.json()["id"] == 1
 
@@ -123,13 +122,13 @@ def test_update_person_not_found(mock_person_service):
     mock_person_service.update_person = AsyncMock(
         side_effect=HTTPException(status_code=409, detail="Person with id 1 doesn't exist")
     )
-    response = client.patch("/person/", json={"first_name": "Jane"})
+    response = client.patch("/api/v1/person/", json={"first_name": "Jane"})
     assert response.status_code == 409
 
 
-# ---------- GET /person (by query param) ----------
+# ---------- GET /api/v1/person (by query param) ----------
 def test_get_person_by_id_success(mock_person_service):
-    response = client.get("/person/?person_id=1")
+    response = client.get("/api/v1/person/?person_id=1")
     assert response.status_code == 200
     assert response.json()["id"] == 1
     mock_person_service.get_person_by_id.assert_called_once_with(1)
@@ -139,14 +138,14 @@ def test_get_person_by_id_not_found(mock_person_service):
     mock_person_service.get_person_by_id = AsyncMock(
         side_effect=HTTPException(status_code=404, detail="Person with id 999 not found")
     )
-    response = client.get("/person/?person_id=999")
+    response = client.get("/api/v1/person/?person_id=999")
     assert response.status_code == 404
     assert "not found" in response.json()["detail"]
 
 
-# ---------- GET /person/me ----------
+# ---------- GET /api/v1/person/me ----------
 def test_get_me_success(mock_person_service, mock_user_id):
-    response = client.get("/person/me")
+    response = client.get("/api/v1/person/me")
     assert response.status_code == 200
     assert response.json()["id"] == 1
     mock_person_service.get_person_by_id.assert_called_once_with(mock_user_id)
@@ -156,7 +155,7 @@ def test_get_me_not_found(mock_person_service):
     mock_person_service.get_person_by_id = AsyncMock(
         side_effect=HTTPException(status_code=404, detail="Person not found")
     )
-    response = client.get("/person/me")
+    response = client.get("/api/v1/person/me")
     assert response.status_code == 404
 
 
@@ -165,6 +164,6 @@ def test_get_me_unauthorized():
         raise HTTPException(status_code=401, detail="missing token")
 
     app.dependency_overrides[get_user_from_jwt] = raise_401
-    response = client.get("/person/me")
+    response = client.get("/api/v1/person/me")
     assert response.status_code == 401
     app.dependency_overrides[get_user_from_jwt] = lambda: 1
