@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.adapters.api.dependencies import get_auth_service, get_user_from_jwt
+from app.adapters.api.dependencies import get_auth_service, get_current_user
 from app.schemas import (
     EmailCodeRequest,
     LoginRequest,
@@ -38,5 +38,5 @@ async def login(
 
 
 @router.get("/ping")
-async def ping(user_id: Annotated[int, Depends(get_user_from_jwt)]) -> None:
+async def ping(user_id: Annotated[int, Depends(get_current_user)]) -> None:
     pass

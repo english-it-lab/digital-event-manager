@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from app.adapters.api.dependencies import get_person_service, get_user_from_jwt
+from app.adapters.api.dependencies import get_person_service, get_current_user
 from app.main import app
 
 client = TestClient(app)
@@ -54,7 +54,7 @@ def mock_user_id():
 @pytest.fixture(autouse=True)
 def override_dependencies(mock_person_service, mock_user_id):
     app.dependency_overrides[get_person_service] = lambda: mock_person_service
-    app.dependency_overrides[get_user_from_jwt] = lambda: mock_user_id
+    app.dependency_overrides[get_current_user] = lambda: mock_user_id
     yield
     app.dependency_overrides.clear()
 
@@ -76,11 +76,11 @@ def test_put_person_unauthorized(mock_person_service):
     async def raise_401():
         raise HTTPException(status_code=401, detail="missing token")
 
-    app.dependency_overrides[get_user_from_jwt] = raise_401
+    app.dependency_overrides[get_current_user] = raise_401
     response = client.put("/api/v1/person/", json=mock_person_update_full)
     assert response.status_code == 401
     mock_person_service.put_person.assert_not_called()
-    app.dependency_overrides[get_user_from_jwt] = lambda: 1
+    app.dependency_overrides[get_current_user] = lambda: 1
 
 
 # ---------- POST /api/v1/person ----------
@@ -163,7 +163,7 @@ def test_get_me_unauthorized():
     async def raise_401():
         raise HTTPException(status_code=401, detail="missing token")
 
-    app.dependency_overrides[get_user_from_jwt] = raise_401
+    app.dependency_overrides[get_current_user] = raise_401
     response = client.get("/api/v1/person/me")
     assert response.status_code == 401
-    app.dependency_overrides[get_user_from_jwt] = lambda: 1
+    app.dependency_overrides[get_current_user] = lambda: 1

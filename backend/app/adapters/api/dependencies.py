@@ -227,7 +227,7 @@ async def get_jwt_payload(
     return payload
 
 
-async def get_user_from_jwt(
+async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     jwt_service: Annotated[JwtService, Depends(get_jwt_service)],
 ) -> int:
