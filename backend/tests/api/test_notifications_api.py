@@ -3,8 +3,9 @@ API тесты для эндпоинта POST /api/v1/notifications/draw/results
 Ветка: ZHER-15
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 

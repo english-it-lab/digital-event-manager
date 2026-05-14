@@ -3,8 +3,9 @@
 Ветка: ZHER-14
 """
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 
 class TestNotificationService:
