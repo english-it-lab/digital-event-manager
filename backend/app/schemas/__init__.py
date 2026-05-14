@@ -710,4 +710,6 @@ __all__ = [
     "EmailCodeRequest",
     "LoginRequest",
     "LoginResponse",
+    "TextbookLevelUpdate",
+    "TeacherUpdate",
 ]
