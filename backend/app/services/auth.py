@@ -1,4 +1,3 @@
-from app.core.config import settings
 from app.repositories.person import PersonRepository
 from app.schemas import EmailCodeRequest, LoginRequest
 from app.services.email_confirmation import EmailConfirmationService
@@ -30,7 +29,4 @@ class AuthService:
         if person is None:
             person = await self._person_repository.create_person(email)
 
-        return await self._create_access_token({"sub": str(person.id)})
-
-    async def _create_access_token(self, jwt_payload: dict) -> str:
-        return self._jwt_service.create_jwt(jwt_payload, settings.jwt_ttl_minutes)
+        return await self._jwt_service.create_jwt(person=person)

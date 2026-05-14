@@ -201,8 +201,91 @@ paths:
         "404":
           description: Группа не найдена
 
-  # ------------------------------------------------------------------ #
-  # 4. Приглашения в группу (токены)                                   #
+        # ------------------------------------------------------------------ #
+        # 3. Группы                                                          #
+        # ------------------------------------------------------------------ #
+    /groups:
+        post:
+            tags: [ Groups ]
+            summary: Создать группу и стать её лидером
+            description: |
+                Создаёт запись в `groups` без привязки к секции (`section_id = NULL`,
+                `registration_time = NULL`, `name`, `member_count = 1`), добавляет
+                создателя в `group_participants` и выставляет
+                `participants.is_group_leader = true` для текущего участника.
+                Секция и время регистрации в секции выставляются позже —
+                в момент подачи заявки на участие (см. `/section-applications`).
+            operationId: createGroup
+            security:
+                -   bearerAuth: [ ]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/GroupCreateRequest"
+            responses:
+                "201":
+                    description: Группа создана
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Group"
+                "400":
+                    description: Некорректные данные
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    description: Требуется авторизация
+                "409":
+                    description: Участник уже состоит в другой группе
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    # ------------------------------------------------------------------ #
+    # 4. Participants                                                    #
+    # ------------------------------------------------------------------ #
+
+    /participants:
+        post:
+            tags: [ Participants ]
+            summary: Создать участника
+            description: |
+                ...
+            operationId: createParticipant
+            security:
+                -   bearerAuth: [ ]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ParticipantCreateRequest"
+            responses:
+                "201":
+                    description: Участник создан
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Participant"
+                "400":
+                    description: Некорректные данные
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "401":
+                    description: Требуется авторизация
+
+
+
+
+      # ------------------------------------------------------------------ #
+  # 5. Приглашения в группу (токены)                                   #
   # ------------------------------------------------------------------ #
   /groups/{groupId}/invite-token:
     post:
@@ -268,7 +351,7 @@ paths:
           description: Группа не найдена или токен недействителен
 
   # ------------------------------------------------------------------ #
-  # 5. Заявки группы на секцию мероприятия                             #
+  # 6. Заявки группы на секцию мероприятия                             #
   # ------------------------------------------------------------------ #
   /section-applications:
     post:
@@ -409,6 +492,134 @@ paths:
           description: Заявка не найдена
         "409":
           description: Заявка уже находится в финальном статусе
+
+  /person:
+    put:
+      tags:
+        - Person
+      summary: Обновить или создать информацию о пользователе
+      description: |
+        ID пользователя извлекается из JWT токена.
+        Если пользователь с таким ID существует – обновляет данные, иначе создаёт нового.
+      operationId: updatePerson
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonUpdate'
+      responses:
+        '200':
+          description: Информация обновлена или создана успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRead'
+        '401':
+          description: Требуется авторизация (отсутствует или недействительный токен)
+        '403':
+          description: Только сам пользователь может изменять свои данные
+    post:
+      tags:
+        - Person
+      summary: Создать информацию о пользователе (только если запись уже существует)
+      description: |
+        **Примечание:** по текущей реализации эндпоинт создаёт запись только при условии,
+        что пользователь с указанным в JWT ID уже существует в базе.
+        Иначе возвращает 409 Conflict.
+      operationId: createPerson
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonUpdate'
+      responses:
+        '200':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRead'
+        '401':
+          description: Требуется авторизация
+        '409':
+          description: Пользователь с таким ID не существует (создание невозможно)
+    patch:
+      tags:
+        - Person
+      summary: Частично обновить данные существующего пользователя
+      description: |
+        Обновляет только переданные поля.
+        Если пользователь с ID из JWT не найден – возвращает 409 Conflict.
+      operationId: updatePersonPartial
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonUpdate'
+      responses:
+        '200':
+          description: Данные обновлены успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRead'
+        '401':
+          description: Требуется авторизация
+        '409':
+          description: Пользователь с таким ID не найден
+    get:
+      tags:
+        - Person
+      summary: Получить информацию о пользователе по ID
+      description: |
+        Не требует аутентификации. Возвращает данные пользователя по переданному ID.
+      operationId: getPersonById
+      parameters:
+        - name: person_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID пользователя
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRead'
+        '404':
+          description: Пользователь не найден
+
+  /person/me:
+    get:
+      tags:
+        - Person
+      summary: Получить данные текущего авторизованного пользователя
+      description: ID пользователя извлекается из JWT токена.
+      operationId: getMyPersonData
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRead'
+        '401':
+          description: Требуется авторизация
+        '404':
+          description: Пользователь не найден
 
 components:
   securitySchemes:
@@ -857,6 +1068,74 @@ components:
           format: date-time
           nullable: true
           description: Соответствует `update_time` в `organizer_section_changes`
+
+    PersonBase:
+      type: object
+      description: Базовая информация о пользователе (без ID)
+      properties:
+        first_name:
+          type: string
+          nullable: true
+          description: Имя
+        last_name:
+          type: string
+          nullable: true
+          description: Фамилия
+        middle_name:
+          type: string
+          nullable: true
+          description: Отчество
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: Email
+        title:
+          type: string
+          nullable: true
+          description: Обращение (г-н, проф., и т.п.)
+        degree:
+          type: string
+          nullable: true
+          description: Учёная степень
+        position:
+          type: string
+          nullable: true
+          description: Должность
+        workplace:
+          type: string
+          nullable: true
+          description: Место работы
+        tg_name:
+          type: string
+          nullable: true
+          description: Имя пользователя в Telegram
+      example:
+        first_name: "Иван"
+        last_name: "Петров"
+        middle_name: "Сергеевич"
+        email: "ivan@example.com"
+        title: "г-н"
+        degree: "канд. техн. наук"
+        position: "ведущий инженер"
+        workplace: "ООО «Технологии»"
+        tg_name: "@ivan_petrov"
+
+    PersonRead:
+      allOf:
+        - $ref: '#/components/schemas/PersonBase'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: integer
+              description: Уникальный идентификатор пользователя
+      description: Полная информация о пользователе (для чтения)
+
+    PersonUpdate:
+      $ref: '#/components/schemas/PersonBase'
+      description: Объект для обновления/создания данных пользователя (все поля опциональны)
 
     # ---------- Common ---------------------------------------------- #
     ErrorResponse:

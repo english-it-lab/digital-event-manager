@@ -40,8 +40,9 @@ async def get_group(
 async def create_group(
     payload: GroupCreate,
     service: Annotated[GroupService, Depends(get_group_service)],
+    person_id: Annotated[int, Depends(get_current_user)],
 ) -> GroupRead:
-    result = await service.create_group(payload)
+    result = await service.create_group(payload=payload, person_id=person_id)
 
     match result:
         case Group() as group:

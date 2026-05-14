@@ -5,6 +5,8 @@ from app.enums.group import GroupStatus
 from app.models import Group
 from app.repositories.group import GroupRepository
 from app.repositories.organizer import OrganizerRepository
+from app.repositories.group_participant import GroupParticipantRepository
+from app.repositories.participant import ParticipantRepository
 from app.repositories.section import SectionRepository
 from app.schemas import GroupCreate, GroupFilter, GroupUpdate
 
@@ -15,10 +17,14 @@ class GroupService:
         repository: GroupRepository,
         organizer_repository: OrganizerRepository,
         section_repository: SectionRepository,
+        participant_repository: ParticipantRepository,
+        group_participant_repository: GroupParticipantRepository,
     ) -> None:
         self._repository = repository
         self._organizer_repository = organizer_repository
         self._section_repository = section_repository
+        self._participant_repository = participant_repository
+        self._group_participant_repository = group_participant_repository
 
     async def list_groups(self, filters: GroupFilter) -> Sequence[Group]:
         return await self._repository.list_groups(filters)
@@ -26,13 +32,20 @@ class GroupService:
     async def get_group_by_id(self, group_id: int) -> Group | None:
         return await self._repository.get_group_by_id(group_id)
 
-    async def create_group(self, user_id: int, payload: GroupCreate) -> Group | Literal["SECTION_NOT_FOUND"]:
+    async def create_group(self, payload: GroupCreate, person_id: int) -> Group | Literal["SECTION_NOT_FOUND"]:
         section_id, name = payload.section_id, payload.name
 
         if not await self._section_exists(section_id):
             return "SECTION_NOT_FOUND"
 
-        return await self._repository.create_group(section_id, name)
+        group = await self._repository.create_group(section_id, name)
+        participant = await self._participant_repository.create_participant(
+            person_id=person_id, section_id=group.section_id, is_group_leader=True
+        )
+        await self._group_participant_repository.create_group_participant(group.id, participant.id)
+        group = await self._repository.increment_count(group)
+
+        return group
 
     async def update_group(self, user_id: int, group_id: int, payload: GroupUpdate) -> Group | Literal["NOT_FOUND", "NOT_LEADER"]:
         group = await self._repository.get_group_by_id(group_id)
