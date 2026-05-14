@@ -41,6 +41,10 @@ class FacultyRead(ORMModelMixin, FacultyBase):
     id: int
 
 
+class FacultyUpdate(BaseModel):
+    pass
+
+
 class DepartmentBase(BaseModel):
     name: str
 
@@ -125,6 +129,10 @@ class CourseCreate(CourseBase):
     pass
 
 
+class CourseUpdate(CourseBase):
+    pass
+
+
 class CourseRead(ORMModelMixin, CourseBase):
     id: int
 
@@ -139,6 +147,10 @@ class TextbookLevelCreate(TextbookLevelBase):
 
 class TextbookLevelRead(ORMModelMixin, TextbookLevelBase):
     id: int
+
+
+class TextbookLevelUpdate(TextbookLevelBase):
+    pass
 
 
 class SectionBase(BaseModel):
@@ -242,6 +254,10 @@ class TeacherRead(ORMModelMixin, TeacherBase):
     id: int
 
 
+class TeacherUpdate(TeacherBase):
+    pass
+
+
 class ParticipantBase(BaseModel):
     person_id: int | None = None
     faculty_id: int | None = None
@@ -258,12 +274,40 @@ class ParticipantBase(BaseModel):
     password_hash: str | None = None
 
 
-class ParticipantCreate(ParticipantBase):
-    pass
+class ParticipantCreate(BaseModel):
+    person_id: int  # person_id обязателен. Не может быть участника без человека.
+    faculty_id: int | None = None
+    course_id: int | None = None
+    teacher_id: int | None = None
+    section_id: int | None = None
+    is_poster_participant: bool = Field(default=False)
+    is_translator_participant: bool = Field(default=False)
+    has_translator_education: bool = Field(default=False)
+    textbook_level_id: int | None = None
+    is_group_leader: bool = Field(default=False)
+    presentation_topic: str | None = None
+    is_notification_allowed: bool = Field(default=True)
+    password_hash: str | None = None
 
 
 class ParticipantRead(ORMModelMixin, ParticipantBase):
     id: int
+
+
+class ParticipantUpdate(BaseModel):
+    person_id: int | None = None
+    faculty_id: int | None = None
+    course_id: int | None = None
+    teacher_id: int | None = None
+    section_id: int | None = None
+    is_poster_participant: bool = Field(default=False)
+    is_translator_participant: bool = Field(default=False)
+    has_translator_education: bool = Field(default=False)
+    textbook_level_id: int | None = None
+    is_group_leader: bool = Field(default=False)
+    presentation_topic: str | None = None
+    is_notification_allowed: bool = Field(default=True)
+    password_hash: str | None = None
 
 
 class GroupParticipantBase(BaseModel):
@@ -579,6 +623,7 @@ __all__ = [
     "FacultyBase",
     "FacultyCreate",
     "FacultyRead",
+    "FacultyUpdate",
     "DepartmentBase",
     "DepartmentCreate",
     "DepartmentRead",
@@ -597,6 +642,7 @@ __all__ = [
     "CourseBase",
     "CourseCreate",
     "CourseRead",
+    "CourseUpdate",
     "TextbookLevelBase",
     "TextbookLevelCreate",
     "TextbookLevelRead",
@@ -623,6 +669,7 @@ __all__ = [
     "ParticipantBase",
     "ParticipantCreate",
     "ParticipantRead",
+    "ParticipantUpdate",
     "GroupParticipantBase",
     "GroupParticipantCreate",
     "GroupParticipantRead",
