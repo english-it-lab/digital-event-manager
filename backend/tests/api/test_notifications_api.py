@@ -58,9 +58,7 @@ class TestNotificationsAPI:
         ):
             mock_instance = AsyncMock()
             MockService.return_value = mock_instance
-            mock_instance.send_draw_notifications = AsyncMock(
-                side_effect=ValueError("Event with id 999 not found")
-            )
+            mock_instance.send_draw_notifications = AsyncMock(side_effect=ValueError("Event with id 999 not found"))
 
             response = client.post("/api/v1/notifications/draw/results", json={"eventId": 999})
             assert response.status_code in [200, 404, 422]
