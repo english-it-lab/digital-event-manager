@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import HTTPException, status
 
 from app.core.config import settings
@@ -36,7 +38,9 @@ class GroupInviteService:
 
         payload = {self.GROUP_ID_KEY: group_id}
         token = self._jwt_service.create_jwt(payload, settings.jwt_ttl_minutes)
-        return InviteTokenResponse(token=token)
+        return InviteTokenResponse(
+            token=token, expired_at=datetime.now() + timedelta(minutes=settings.jwt_ttl_minutes)
+        )
 
     async def join_by_token(self, token: str, person_id: int) -> Group:
         payload = self._jwt_service.decode_jwt(token)
