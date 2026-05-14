@@ -6,6 +6,7 @@ from app.adapters.api.v1 import (
     participant_rankings,
     participant_scores,
     poster_contents,
+    score_history,
     section_juries,
     technical_requirements,
     universities,
@@ -26,6 +27,7 @@ router.include_router(technical_requirements.router, prefix="/technical-requirem
 router.include_router(poster_contents.router, prefix="/poster-contents")
 router.include_router(juries.router, prefix="/juries")
 router.include_router(participant_scores.router, prefix="/participants/{participant_id}/scores")
+router.include_router(score_history.router, prefix="/score-history")
 router.include_router(participant_rankings.router, prefix="/participant-rankings")
 router.include_router(sections.router, prefix="/sections")
 router.include_router(section_juries.router, prefix="/section-juries")

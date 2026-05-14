@@ -442,6 +442,26 @@ class JuryScoreChangeRead(ORMModelMixin, JuryScoreChangeBase):
     id: int
 
 
+class ScoreHistoryBase(BaseModel):
+    jury_scores_id: int
+    jury_id: int | None = None
+    update_time: datetime | None = None
+
+
+class ScoreHistoryCreate(ScoreHistoryBase):
+    pass
+
+
+class ScoreHistoryRead(ORMModelMixin, ScoreHistoryBase):
+    id: int
+
+
+class ScoreHistoryUpdate(BaseModel):
+    jury_scores_id: int | None = None
+    jury_id: int | None = None
+    update_time: datetime | None = None
+
+
 class JuryProgressItem(BaseModel):
     participant_id: int
     participant_name: str

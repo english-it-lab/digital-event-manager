@@ -15,6 +15,7 @@ from app.repositories.participant import ParticipantRepository
 from app.repositories.participant_ranking import ParticipantRankingRepository
 from app.repositories.person import PersonRepository
 from app.repositories.poster_content import PosterContentRepository
+from app.repositories.score_history import ScoreHistoryRepository
 from app.repositories.section import SectionRepository
 from app.repositories.section_jury import SectionJuryRepository
 from app.repositories.technical_requirement import (
@@ -30,6 +31,7 @@ from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.poster_content import PosterContentService
+from app.services.score_history import ScoreHistoryService
 from app.services.section import SectionService
 from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
@@ -92,6 +94,19 @@ def get_jury_score_service(
         participant_repository=participant_repo,
         jury_repository=jury_repo,
         section_jury_repository=section_jury_repo,
+    )
+
+
+def get_score_history_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ScoreHistoryService:
+    score_history_repo = ScoreHistoryRepository(session)
+    jury_score_repo = JuryScoreRepository(session)
+    jury_repo = JuryRepository(session)
+    return ScoreHistoryService(
+        score_history_repository=score_history_repo,
+        jury_score_repository=jury_score_repo,
+        jury_repository=jury_repo,
     )
 
 
