@@ -25,10 +25,8 @@ class TestNotificationService:
     @pytest.fixture
     def service(self, mock_notification_repo, mock_event_repo):
         from app.services.notification import NotificationService
-        return NotificationService(
-            repository=mock_notification_repo,
-            event_repository=mock_event_repo
-        )
+
+        return NotificationService(repository=mock_notification_repo, event_repository=mock_event_repo)
 
     # ========== Вспомогательные методы ==========
 
@@ -39,7 +37,6 @@ class TestNotificationService:
 
         participant = Mock()
         participant.person = person
-        # ВАЖНО: в коде сервиса проверяется is_notification_allowed как атрибут
         participant.is_notification_allowed = notification_allowed
         return participant
 
@@ -81,7 +78,7 @@ class TestNotificationService:
         mock_group = self._create_mock_group(num_participants=2)
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             assert mock_send_email.call_count == 2
 
@@ -109,7 +106,7 @@ class TestNotificationService:
         mock_group.group_participants = []
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             mock_send_email.assert_not_called()
 
@@ -122,13 +119,11 @@ class TestNotificationService:
         mock_event.event_date = Mock(year=2025)
         mock_event_repo.get_by_id.return_value = mock_event
 
-        # Создаём группу с ОДНИМ участником (у которого есть email)
         group = self._create_mock_group(num_participants=1)
         mock_notification_repo.get_notification_payload.return_value = [group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
-            # Ожидаем 1 письмо
             assert mock_send_email.call_count == 1
 
     # ========== TC-SRV-05: Дубликаты email ==========
@@ -174,6 +169,6 @@ class TestNotificationService:
 
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             assert mock_send_email.call_count == 1
