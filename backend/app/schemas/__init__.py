@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from enum import Enum
-from typing import Literal
+from enum import StrEnum
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, constr, field_validator
+from annotated_types import MaxLen
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+from app.enums.group import GroupStatus
 
 
 class ORMModelMixin:
@@ -14,7 +17,7 @@ class ORMModelMixin:
 
 
 class UniversityBase(BaseModel):
-    name: constr(max_length=255)
+    name: Annotated[str, MaxLen(255)]
 
 
 class UniversityCreate(UniversityBase):
@@ -36,6 +39,10 @@ class FacultyCreate(FacultyBase):
 
 class FacultyRead(ORMModelMixin, FacultyBase):
     id: int
+
+
+class FacultyUpdate(BaseModel):
+    pass
 
 
 class DepartmentBase(BaseModel):
@@ -122,6 +129,10 @@ class CourseCreate(CourseBase):
     pass
 
 
+class CourseUpdate(CourseBase):
+    pass
+
+
 class CourseRead(ORMModelMixin, CourseBase):
     id: int
 
@@ -136,6 +147,10 @@ class TextbookLevelCreate(TextbookLevelBase):
 
 class TextbookLevelRead(ORMModelMixin, TextbookLevelBase):
     id: int
+
+
+class TextbookLevelUpdate(TextbookLevelBase):
+    pass
 
 
 class SectionBase(BaseModel):
@@ -185,16 +200,36 @@ class TopicRead(ORMModelMixin, TopicBase):
 class GroupBase(BaseModel):
     section_id: int | None = None
     name: str | None = None
+    status: GroupStatus = GroupStatus.FORMING
     member_count: int | None = None
     registration_time: datetime | None = None
 
 
-class GroupCreate(GroupBase):
-    pass
+class GroupCreate(BaseModel):
+    section_id: int
+    name: str
+
+
+class GroupUpdate(BaseModel):
+    name: str | None = None
 
 
 class GroupRead(ORMModelMixin, GroupBase):
     id: int
+
+
+class GroupFilter(BaseModel):
+    section_id: int = Field(
+        default=None,
+        gt=0,
+        alias="section-id",
+    )
+    status: GroupStatus | None = Field(default=None, alias="group-status")
+
+
+class InviteTokenResponse(BaseModel):
+    token: str = Field(description="Токен приглашения")
+    expired_at: datetime = Field(description="Время жизни токена")
 
 
 class GroupTopicBase(BaseModel):
@@ -224,6 +259,10 @@ class TeacherRead(ORMModelMixin, TeacherBase):
     id: int
 
 
+class TeacherUpdate(TeacherBase):
+    pass
+
+
 class ParticipantBase(BaseModel):
     person_id: int | None = None
     faculty_id: int | None = None
@@ -240,12 +279,40 @@ class ParticipantBase(BaseModel):
     password_hash: str | None = None
 
 
-class ParticipantCreate(ParticipantBase):
-    pass
+class ParticipantCreate(BaseModel):
+    person_id: int  # person_id обязателен. Не может быть участника без человека.
+    faculty_id: int | None = None
+    course_id: int | None = None
+    teacher_id: int | None = None
+    section_id: int | None = None
+    is_poster_participant: bool = Field(default=False)
+    is_translator_participant: bool = Field(default=False)
+    has_translator_education: bool = Field(default=False)
+    textbook_level_id: int | None = None
+    is_group_leader: bool = Field(default=False)
+    presentation_topic: str | None = None
+    is_notification_allowed: bool = Field(default=True)
+    password_hash: str | None = None
 
 
 class ParticipantRead(ORMModelMixin, ParticipantBase):
     id: int
+
+
+class ParticipantUpdate(BaseModel):
+    person_id: int | None = None
+    faculty_id: int | None = None
+    course_id: int | None = None
+    teacher_id: int | None = None
+    section_id: int | None = None
+    is_poster_participant: bool = Field(default=False)
+    is_translator_participant: bool = Field(default=False)
+    has_translator_education: bool = Field(default=False)
+    textbook_level_id: int | None = None
+    is_group_leader: bool = Field(default=False)
+    presentation_topic: str | None = None
+    is_notification_allowed: bool = Field(default=True)
+    password_hash: str | None = None
 
 
 class GroupParticipantBase(BaseModel):
@@ -369,12 +436,12 @@ class ParticipantScoreSummary(BaseModel):
         return round(total_sum / count, 2) if count > 0 else None
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     ASC = "asc"
     DESC = "desc"
 
 
-class ParticipantRankingSortField(str, Enum):
+class ParticipantRankingSortField(StrEnum):
     TOTAL_SCORE = "total_score"
     LAST_NAME = "last_name"
     FIRST_NAME = "first_name"
@@ -422,6 +489,26 @@ class JuryScoreChangeCreate(JuryScoreChangeBase):
 
 class JuryScoreChangeRead(ORMModelMixin, JuryScoreChangeBase):
     id: int
+
+
+class ScoreHistoryBase(BaseModel):
+    jury_scores_id: int
+    jury_id: int | None = None
+    update_time: datetime | None = None
+
+
+class ScoreHistoryCreate(ScoreHistoryBase):
+    pass
+
+
+class ScoreHistoryRead(ORMModelMixin, ScoreHistoryBase):
+    id: int
+
+
+class ScoreHistoryUpdate(BaseModel):
+    jury_scores_id: int | None = None
+    jury_id: int | None = None
+    update_time: datetime | None = None
 
 
 class JuryProgressItem(BaseModel):
@@ -519,6 +606,20 @@ class PosterContentUpdate(BaseModel):
     images_amount: int | None = None
 
 
+class EmailCodeRequest(BaseModel):
+    email: EmailStr
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    code: str
+
+
+class LoginResponse(ORMModelMixin, BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 __all__ = [
     "ORMModelMixin",
     "UniversityBase",
@@ -527,6 +628,7 @@ __all__ = [
     "FacultyBase",
     "FacultyCreate",
     "FacultyRead",
+    "FacultyUpdate",
     "DepartmentBase",
     "DepartmentCreate",
     "DepartmentRead",
@@ -545,6 +647,7 @@ __all__ = [
     "CourseBase",
     "CourseCreate",
     "CourseRead",
+    "CourseUpdate",
     "TextbookLevelBase",
     "TextbookLevelCreate",
     "TextbookLevelRead",
@@ -560,16 +663,20 @@ __all__ = [
     "TopicRead",
     "GroupBase",
     "GroupCreate",
+    "GroupUpdate",
     "GroupRead",
+    "GroupFilter",
     "GroupTopicBase",
     "GroupTopicCreate",
     "GroupTopicRead",
+    "InviteTokenResponse",
     "TeacherBase",
     "TeacherCreate",
     "TeacherRead",
     "ParticipantBase",
     "ParticipantCreate",
     "ParticipantRead",
+    "ParticipantUpdate",
     "GroupParticipantBase",
     "GroupParticipantCreate",
     "GroupParticipantRead",
@@ -607,4 +714,9 @@ __all__ = [
     "PosterContentRead",
     "PosterContentUpdate",
     "JuryProgressItem",
+    "EmailCodeRequest",
+    "LoginRequest",
+    "LoginResponse",
+    "TextbookLevelUpdate",
+    "TeacherUpdate",
 ]

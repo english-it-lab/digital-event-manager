@@ -18,6 +18,7 @@ def send_email(to: str, subject: str, body: str):
     msg["Subject"] = subject
 
     # Текст письма
+    body = body
     msg.attach(MIMEText(body, "plain", "utf-8"))
 
     # Отправка

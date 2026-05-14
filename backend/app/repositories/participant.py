@@ -1,7 +1,10 @@
+from collections.abc import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Participant
+from app.schemas import ParticipantCreate, ParticipantUpdate
 
 
 class ParticipantRepository:
@@ -9,6 +12,20 @@ class ParticipantRepository:
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def create_participant(self, person_id: int, section_id: int) -> Participant:
+        participant = Participant(person_id=person_id, section_id=section_id)
+        self._session.add(participant)
+
+        await self._session.flush()
+        await self._session.refresh(participant)
+        return participant
+
+    async def list_participants(self, skip: int = 0, limit: int = 100) -> Sequence[Participant]:
+        """Get a list of participants with pagination."""
+        stmt = select(Participant).order_by(Participant.id).offset(skip).limit(limit)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
 
     async def get_participant_by_id(self, participant_id: int) -> Participant | None:
         """
@@ -23,3 +40,55 @@ class ParticipantRepository:
         stmt = select(Participant).where(Participant.id == participant_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def create_full_participant(self, data: ParticipantCreate) -> Participant | None:
+        """
+        Create a new participant.
+        """
+        participant = Participant(
+            person_id=data.person_id,
+            faculty_id=data.faculty_id,
+            course_id=data.course_id,
+            teacher_id=data.teacher_id,
+            section_id=data.section_id,
+            is_poster_participant=data.is_poster_participant,
+            is_translator_participant=data.is_translator_participant,
+            has_translator_education=data.has_translator_education,
+            textbook_level_id=data.textbook_level_id,
+            is_group_leader=data.is_group_leader,
+            presentation_topic=data.presentation_topic,
+            is_notification_allowed=data.is_notification_allowed,
+            password_hash=data.password_hash,
+        )
+        self._session.add(participant)
+        await self._session.flush()
+        await self._session.commit()
+        await self._session.refresh(participant)
+        return participant
+
+    async def update_participant(self, participant_id: int, data: ParticipantUpdate) -> Participant | None:
+        """
+        Update participant details.
+        """
+        participant = await self.get_participant_by_id(participant_id)
+        if not participant:
+            return None
+
+        update_data = data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(participant, field, value)
+
+        await self._session.flush()
+        await self._session.commit()
+        await self._session.refresh(participant)
+        return participant
+
+    async def delete_participant(self, participant_id: int) -> bool:
+        """Delete a participant by ID."""
+        participant = await self.get_participant_by_id(participant_id)
+        if not participant:
+            return False
+
+        await self._session.delete(participant)
+        await self._session.commit()
+        return True
