@@ -3,8 +3,9 @@
 Ветка: ZHER-15
 """
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 
 class TestNotificationService:
@@ -25,10 +26,8 @@ class TestNotificationService:
     @pytest.fixture
     def service(self, mock_notification_repo, mock_event_repo):
         from app.services.notification import NotificationService
-        return NotificationService(
-            repository=mock_notification_repo,
-            event_repository=mock_event_repo
-        )
+
+        return NotificationService(repository=mock_notification_repo, event_repository=mock_event_repo)
 
     # TC-SRV-01: Успешная отправка
     @pytest.mark.asyncio
@@ -43,7 +42,7 @@ class TestNotificationService:
         mock_group = self._create_mock_group()
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             # Act
             await service.send_draw_notifications(event_id=1)
 
@@ -73,7 +72,7 @@ class TestNotificationService:
         mock_group.name = "No Topic Group"
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             mock_send_email.assert_not_called()
 
@@ -89,7 +88,7 @@ class TestNotificationService:
         mock_group = self._create_mock_group()
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             assert mock_send_email.call_count == 2
 
@@ -114,7 +113,7 @@ class TestNotificationService:
         ]
         mock_notification_repo.get_notification_payload.return_value = [mock_group]
 
-        with patch('app.services.send_mails.send_email') as mock_send_email:
+        with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
             assert mock_send_email.call_count == 1
 
