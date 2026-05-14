@@ -1,6 +1,7 @@
 """
 Юнит-тесты для NotificationService (бизнес-логика уведомлений)
 Ветка: ZHER-14
+Только юнит-тесты с моками, без реальной БД
 """
 
 from unittest.mock import AsyncMock, Mock, patch
@@ -29,10 +30,10 @@ class TestNotificationService:
 
         return NotificationService(repository=mock_notification_repo, event_repository=mock_event_repo)
 
-    # ========== Вспомогательные методы для создания моков ==========
+    # ========== Вспомогательные методы ==========
 
     def _create_mock_participant(self, email: str = "test@example.com", notification_allowed: bool = True):
-        """Создаёт мок участника - ВАЖНО: is_notification_allowed это АТРИБУТ, не метод!"""
+        """Создаёт мок участника"""
         person = Mock()
         person.email = email
 
@@ -47,7 +48,7 @@ class TestNotificationService:
         return gp
 
     def _create_mock_group(self, num_participants: int = 2):
-        """Создаёт мок группы с заданным количеством участников"""
+        """Создаёт мок группы"""
         topic = Mock()
         topic.name = "Test Topic"
         topic.technical_requirements = []
@@ -81,7 +82,6 @@ class TestNotificationService:
 
         with patch("app.services.send_mails.send_email") as mock_send_email:
             await service.send_draw_notifications(event_id=1)
-
             assert mock_send_email.call_count == 2
 
     # ========== TC-02: Event не найден ==========
@@ -138,15 +138,8 @@ class TestNotificationService:
         mock_event.event_date = Mock(year=2025)
         mock_event_repo.get_by_id.return_value = mock_event
 
-        person = Mock()
-        person.email = "disabled@example.com"
-
-        participant = Mock()
-        participant.person = person
-        participant.is_notification_allowed = False
-
-        gp = Mock()
-        gp.participant = participant
+        participant = self._create_mock_participant(email="disabled@example.com", notification_allowed=False)
+        gp = self._create_mock_group_participant(participant)
 
         topic = Mock()
         topic.name = "Test Topic"
@@ -209,23 +202,11 @@ class TestNotificationService:
 
         same_email = "duplicate@example.com"
 
-        person1 = Mock()
-        person1.email = same_email
-        person2 = Mock()
-        person2.email = same_email
+        participant1 = self._create_mock_participant(email=same_email)
+        participant2 = self._create_mock_participant(email=same_email)
 
-        participant1 = Mock()
-        participant1.person = person1
-        participant1.is_notification_allowed = True
-
-        participant2 = Mock()
-        participant2.person = person2
-        participant2.is_notification_allowed = True
-
-        gp1 = Mock()
-        gp1.participant = participant1
-        gp2 = Mock()
-        gp2.participant = participant2
+        gp1 = self._create_mock_group_participant(participant1)
+        gp2 = self._create_mock_group_participant(participant2)
 
         topic = Mock()
         topic.name = "Test Topic"
