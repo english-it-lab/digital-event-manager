@@ -8,6 +8,7 @@ source/bot/database/instance/*.db
 
 .idea/
 .idea
+.DS_Store
 
 backend/2025_программа_science_kaleidoscope_итоговый_вариант.docx
 generated/
