@@ -77,3 +77,13 @@ class SectionRepository:
         await self._session.delete(section)
         await self._session.commit()
         return True
+
+    async def get_sections_by_event(self, event_id: int) -> Sequence[Section]:
+        stmt = (
+            select(Section)
+            .join(EventSection, Section.id == EventSection.section_id)
+            .where(EventSection.event_id == event_id)
+            .order_by(Section.time)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().all()

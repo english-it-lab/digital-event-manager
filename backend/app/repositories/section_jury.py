@@ -2,8 +2,9 @@ from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models import SectionJury
+from app.models import Jury, SectionJury
 
 
 class SectionJuryRepository:
@@ -75,3 +76,16 @@ class SectionJuryRepository:
         stmt = select(SectionJury).where(SectionJury.jury_id == jury_id, SectionJury.section_id == section_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    async def list_by_section_with_jury(self, section_id: int) -> Sequence[SectionJury]:
+        stmt = (
+            select(SectionJury)
+            .where(SectionJury.section_id == section_id)
+            .options(
+                selectinload(SectionJury.jury).selectinload(Jury.person),
+                selectinload(SectionJury.jury).selectinload(Jury.university),
+            )
+            .order_by(SectionJury.id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().all()

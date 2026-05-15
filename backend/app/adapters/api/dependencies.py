@@ -6,6 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
+from app.repositories.committee_member import CommitteeMemberRepository
 from app.repositories.course import CourseRepository
 from app.repositories.event import EventRepository
 from app.repositories.faculty import FacultyRepository
@@ -30,12 +31,14 @@ from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
 from app.schemas import AuthPayload
 from app.services.auth import AuthService
+from app.services.committee import CommitteeService
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.group_invites import GroupInviteService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
+from app.services.organizer import OrganizerService
 from app.services.participant import ParticipantService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.person import PersonService
@@ -46,6 +49,16 @@ from app.services.section_jury import SectionJuryService
 from app.services.technical_requirement import TechnicalRequirementService
 from app.services.topic import TopicService
 from app.services.university import UniversityService
+
+"""
+Dependencies for event program generation (separate to avoid circular imports)
+"""
+from app.repositories.events import EventRepository
+from app.repositories.venues import VenueRepository
+from app.services.doc_generator import DocGeneratorService
+from app.services.events import EventProgramService
+from app.services.pdf_generator import PDFGeneratorService
+from app.services.venues import VenuesService
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
@@ -153,6 +166,56 @@ def get_section_jury_service(
         section_repository=section_repository,
         jury_repository=jury_repository,
     )
+
+
+def get_event_program_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> EventProgramService:
+    """Dependency for event program service."""
+    event_repo = EventRepository(session)
+    section_repo = SectionRepository(session)
+    participant_repo = ParticipantRepository(session)
+    committee_repo = CommitteeMemberRepository(session)
+    section_jury_repo = SectionJuryRepository(session)
+    return EventProgramService(event_repo, section_repo, participant_repo, committee_repo, section_jury_repo)
+
+
+def get_committee_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> CommitteeService:
+    repository = CommitteeMemberRepository(session)
+    return CommitteeService(repository)
+
+
+def get_pdf_generator_service() -> PDFGeneratorService:
+    """Dependency for PDF generator service."""
+    return PDFGeneratorService()
+
+
+def get_doc_generator_service() -> DocGeneratorService:
+    """Dependency for DOC generator service."""
+    return DocGeneratorService()
+
+
+def get_venues(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> VenuesService:
+    repository = VenueRepository(session)
+    return VenuesService(repository)
+
+
+def get_person_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> PersonService:
+    repository = PersonRepository(session)
+    return PersonService(repository)
+
+
+def get_organizer_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> OrganizerService:
+    repository = OrganizerRepository(session)
+    return OrganizerService(repository)
 
 
 def get_person_service(
