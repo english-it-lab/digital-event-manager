@@ -34,7 +34,6 @@ LIGHT_BLUE = colors.HexColor("#3498DB")
 
 
 class PDFGeneratorService:
-
     def _make_title_style(self, parent, font_size=16, bold=True, space_after=6, alignment=1):
         return ParagraphStyle(
             f"Custom{parent}",
@@ -131,8 +130,12 @@ class PDFGeneratorService:
         for m in committee:
             grouped[m.get("committee_type", "organizing")].append(m)
 
-        body_style = ParagraphStyle("CommitteeBody", parent=styles["Normal"], fontName=FONT, fontSize=11, spaceAfter=6, leading=14)
-        label_style = ParagraphStyle("CommitteeLabel", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=11, spaceAfter=4, spaceBefore=10)
+        body_style = ParagraphStyle(
+            "CommitteeBody", parent=styles["Normal"], fontName=FONT, fontSize=11, spaceAfter=6, leading=14
+        )
+        label_style = ParagraphStyle(
+            "CommitteeLabel", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=11, spaceAfter=4, spaceBefore=10
+        )
 
         for ctype in ["organizing", "program"]:
             members = grouped.get(ctype, [])
@@ -202,21 +205,29 @@ class PDFGeneratorService:
             return
 
         table_data = [
-            [Paragraph("<b>Time</b>", header_style), Paragraph("<b>Section</b>", header_style), Paragraph("<b>Room</b>", header_style)]
+            [
+                Paragraph("<b>Time</b>", header_style),
+                Paragraph("<b>Section</b>", header_style),
+                Paragraph("<b>Room</b>", header_style),
+            ]
         ] + rows
         col_widths = [3.5 * cm, 10 * cm, 4 * cm]
         table = Table(table_data, colWidths=col_widths)
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("FONTNAME", (0, 0), (-1, 0), FONT_BOLD),
-            ("FONTNAME", (0, 1), (-1, -1), FONT),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ]))
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BLUE),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("FONTNAME", (0, 0), (-1, 0), FONT_BOLD),
+                    ("FONTNAME", (0, 1), (-1, -1), FONT),
+                    ("FONTSIZE", (0, 0), (-1, -1), 9),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+            )
+        )
         story.append(table)
 
     def _build_section(self, story, styles, section):
@@ -237,7 +248,12 @@ class PDFGeneratorService:
             title_text += f" ({hall})"
 
         section_title = ParagraphStyle(
-            "SectionTitle", parent=styles["Heading2"], fontName=FONT_BOLD, fontSize=13, textColor=BLUE, spaceAfter=6,
+            "SectionTitle",
+            parent=styles["Heading2"],
+            fontName=FONT_BOLD,
+            fontSize=13,
+            textColor=BLUE,
+            spaceAfter=6,
         )
         story.append(Paragraph(title_text, section_title))
 
@@ -284,7 +300,12 @@ class PDFGeneratorService:
             advisor = p.get("scientific_advisor")
 
             participant_style = ParagraphStyle(
-                f"Part{idx}", parent=styles["Normal"], fontName=FONT, fontSize=10, spaceAfter=4, leading=13,
+                f"Part{idx}",
+                parent=styles["Normal"],
+                fontName=FONT,
+                fontSize=10,
+                spaceAfter=4,
+                leading=13,
             )
 
             story.append(Paragraph(f"{idx}. {name}", participant_style))
@@ -316,10 +337,20 @@ class PDFGeneratorService:
         story.append(Spacer(1, 10))
 
         section_style = ParagraphStyle(
-            "RuSection", parent=styles["Normal"], fontName=FONT_BOLD, fontSize=11, spaceAfter=6, spaceBefore=10,
+            "RuSection",
+            parent=styles["Normal"],
+            fontName=FONT_BOLD,
+            fontSize=11,
+            spaceAfter=6,
+            spaceBefore=10,
         )
         part_style = ParagraphStyle(
-            "RuParticipant", parent=styles["Normal"], fontName=FONT, fontSize=10, spaceAfter=3, leftIndent=20,
+            "RuParticipant",
+            parent=styles["Normal"],
+            fontName=FONT,
+            fontSize=10,
+            spaceAfter=3,
+            leftIndent=20,
         )
 
         for section in sections:
