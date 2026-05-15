@@ -8,7 +8,8 @@ from app.repositories.organizer import OrganizerRepository
 from app.repositories.group_participant import GroupParticipantRepository
 from app.repositories.participant import ParticipantRepository
 from app.repositories.section import SectionRepository
-from app.schemas import GroupCreate, GroupFilter, GroupUpdate
+from app.repositories.person import PersonRepository
+from app.schemas import GroupCreate, GroupFilter, GroupUpdate, ParticipantFilter
 
 
 class GroupService:
@@ -19,12 +20,14 @@ class GroupService:
         section_repository: SectionRepository,
         participant_repository: ParticipantRepository,
         group_participant_repository: GroupParticipantRepository,
+        person_repository: PersonRepository
     ) -> None:
         self._repository = repository
         self._organizer_repository = organizer_repository
         self._section_repository = section_repository
         self._participant_repository = participant_repository
         self._group_participant_repository = group_participant_repository
+        self._person_repository = person_repository
 
     async def list_groups(self, filters: GroupFilter) -> Sequence[Group]:
         return await self._repository.list_groups(filters)
@@ -32,7 +35,12 @@ class GroupService:
     async def get_group_by_id(self, group_id: int) -> Group | None:
         return await self._repository.get_group_by_id(group_id)
 
-    async def create_group(self, payload: GroupCreate, person_id: int) -> Group | Literal["SECTION_NOT_FOUND"]:
+    async def create_group(self, user_id: int, payload: GroupCreate) -> Group | Literal["INCOMPLETE_PROFILE", "SECTION_NOT_FOUND"]:
+        person = self._person_repository.get_person_by_id(user_id)
+
+        if not person.is_profile_complete:
+            return "INCOMPLETE_PROFILE"
+
         section_id, name = payload.section_id, payload.name
 
         if not await self._section_exists(section_id):
@@ -40,7 +48,7 @@ class GroupService:
 
         group = await self._repository.create_group(section_id, name)
         participant = await self._participant_repository.create_participant(
-            person_id=person_id, section_id=group.section_id, is_group_leader=True
+            person_id=user_id, section_id=group.section_id, is_group_leader=True
         )
         await self._group_participant_repository.create_group_participant(group.id, participant.id)
         group = await self._repository.increment_count(group)
@@ -70,7 +78,7 @@ class GroupService:
         await self._repository.delete_group(group)
         return "GOOD"
 
-    async def submit_group(self, user_id: int, group_id: int) -> Group | Literal["NOT_FOUND", "NOT_LEADER", "TRANSITION_ERROR"]:
+    async def submit_group(self, user_id: int, group_id: int) -> Group | Literal["NOT_FOUND", "NOT_LEADER", "TRANSITION_ERROR", "INCOMPLETE_PROFILE"]:
         group = await self._repository.get_group_by_id(group_id)
 
         if group is None:
@@ -81,6 +89,11 @@ class GroupService:
 
         if group.status != GroupStatus.FORMING:
             return "TRANSITION_ERROR"
+        
+        participants = self._participant_repository.list_participants_by_group_id(group_id)
+        for participant in participants:
+            if not participant.is_profile_complete:
+                return "INCOMPLETE_PROFILE"
 
         group = await self._repository.update_status(group, GroupStatus.PENDING)
         group = await self._repository.set_registration_time(group)

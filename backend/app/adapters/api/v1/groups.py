@@ -47,6 +47,11 @@ async def create_group(
     match result:
         case Group() as group:
             return GroupRead.model_validate(group)
+        
+        case "INCOMPLETE_PROFILE":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="There are empty fields in users profile"
+            )
 
         case "SECTION_NOT_FOUND":
             raise HTTPException(
@@ -65,7 +70,7 @@ async def update_group(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "NOT_LEADER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only leader can submit group")
 
         case Group() as group:
             return GroupRead.model_validate(group)
@@ -83,7 +88,7 @@ async def delete_group(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "NOT_LEADER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only leader can submit group")
 
         case "GOOD":
             pass
@@ -104,11 +109,16 @@ async def submit_group(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "NOT_LEADER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only leader can submit group")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only leader can submit group")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Group status must be FORMING"
+            )
+
+        case "INCOMPLETE_PROFILE":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="To sumbit all participants must fill their respective participant data"
             )
 
 
@@ -127,7 +137,7 @@ async def approve_group(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "NOT_ORGANIZER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only organizer can approve group")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only organizer can approve group")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
@@ -150,7 +160,7 @@ async def reject_group(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} not found")
 
         case "NOT_ORGANIZER":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Only organizer can reject group")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only organizer can reject group")
 
         case "TRANSITION_ERROR":
             raise HTTPException(
@@ -174,4 +184,10 @@ async def join_by_token(
     service: Annotated[GroupInviteService, Depends(get_group_invite_service)],
 ) -> GroupRead:
     group = await service.join_by_token(token=token, person_id=person_id)
+
+    if group is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="There are empty fields in users profile"
+        )
+
     return GroupRead.model_validate(group)

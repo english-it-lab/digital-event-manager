@@ -155,10 +155,16 @@ def get_section_jury_service(
     )
 
 
+def get_person_repository(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionRepository:
+    return PersonRepository(session)
+
+
 def get_person_service(
     session: Annotated[AsyncSession, Depends(get_session)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)]
 ) -> PersonService:
-    person_repository = PersonRepository(session)
     return PersonService(person_repository=person_repository)
 
 
@@ -197,12 +203,14 @@ def get_group_service(
     section_repository: Annotated[SectionRepository, Depends(get_section_repository)],
     group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> GroupService:
     return GroupService(
         repository=group_repository,
         section_repository=section_repository,
         group_participant_repository=group_participant_repository,
         participant_repository=participant_repository,
+        person_repository=person_repository,
     )
 
 
@@ -211,12 +219,14 @@ def get_group_invite_service(
     group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
     group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> GroupInviteService:
     return GroupInviteService(
         jwt_service=jwt_service,
         group_repository=group_repository,
         group_participant_repository=group_participant_repository,
         participant_repository=participant_repository,
+        person_repository=person_repository,
     )
 
 
