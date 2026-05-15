@@ -81,6 +81,9 @@ class PersonMyselfUpdate(PersonBase):
     pass
 
 
+PersonCreate = PersonBase
+
+
 class JwtFields(StrEnum):
     PERSON_ID = "PERSON_ID"
     EXPIRATION_DATE = "EXPIRATION_DATE"
@@ -137,6 +140,22 @@ class EventRead(ORMModelMixin, EventBase):
     id: int
 
 
+class CommitteeMemberBase(BaseModel):
+    event_id: int
+    person_id: int | None = None
+    role: str | None = None
+    committee_type: str | None = None
+    sort_order: int = Field(default=0)
+
+
+class CommitteeMemberCreate(CommitteeMemberBase):
+    pass
+
+
+class CommitteeMemberRead(ORMModelMixin, CommitteeMemberBase):
+    id: int
+
+
 class CourseBase(BaseModel):
     year: int | None = None
 
@@ -173,6 +192,8 @@ class SectionBase(BaseModel):
     name: str
     lecture_hall: str | None = None
     time: datetime | None = None
+    section_type: str | None = None
+    time_limit: int | None = None
 
 
 class SectionCreate(SectionBase):
@@ -291,6 +312,9 @@ class ParticipantBase(BaseModel):
     textbook_level_id: int | None = None
     is_group_leader: bool = Field(default=False)
     presentation_topic: str | None = None
+    abstract: str | None = None
+    scientific_advisor_id: int | None = None
+    presentation_order: int | None = None
     is_notification_allowed: bool = Field(default=True)
     password_hash: str | None = None
 
@@ -660,6 +684,9 @@ __all__ = [
     "EventBase",
     "EventCreate",
     "EventRead",
+    "CommitteeMemberBase",
+    "CommitteeMemberCreate",
+    "CommitteeMemberRead",
     "CourseBase",
     "CourseCreate",
     "CourseRead",

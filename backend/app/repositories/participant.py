@@ -2,8 +2,9 @@ from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models import Participant, GroupParticipant
+from app.models import Faculty, Participant, GroupParticipant
 from app.schemas import ParticipantCreate, ParticipantUpdate
 
 
@@ -50,6 +51,20 @@ class ParticipantRepository:
         stmt = select(Participant).where(Participant.id == participant_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_participants_by_section(self, section_id: int) -> Sequence[Participant]:
+        stmt = (
+            select(Participant)
+            .where(Participant.section_id == section_id)
+            .options(
+                selectinload(Participant.person),
+                selectinload(Participant.faculty).selectinload(Faculty.university),
+                selectinload(Participant.scientific_advisor),
+            )
+            .order_by(Participant.presentation_order, Participant.id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
 
     async def create_full_participant(self, data: ParticipantCreate) -> Participant | None:
         """

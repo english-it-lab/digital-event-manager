@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +11,11 @@ class PersonRepository:
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def list_people(self, skip: int = 0, limit: int = 100) -> Sequence[Person]:
+        stmt = select(Person).order_by(Person.last_name, Person.first_name).offset(skip).limit(limit)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
 
     async def get_person_by_id(self, person_id: int) -> Person | None:
         stmt = select(Person).where(Person.id == person_id)
