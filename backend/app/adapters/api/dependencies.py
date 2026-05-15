@@ -223,8 +223,7 @@ def get_organizer_service(
 
 
 def get_person_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
-    person_repository: Annotated[PersonRepository, Depends(get_person_repository)]
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> PersonService:
     return PersonService(person_repository=person_repository)
 

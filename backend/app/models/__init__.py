@@ -71,16 +71,16 @@ class Person(Base):
     @property
     def is_profile_complete(self) -> bool:
         required_fields = [
-            self.first_name, 
+            self.first_name,
             self.last_name,
             self.middle_name,
             self.title,
             self.degree,
             self.position,
             self.workplace,
-            self.tg_name
+            self.tg_name,
         ]
-        
+
         return all(field is not None for field in required_fields)
 
 
@@ -290,7 +290,7 @@ class Participant(Base):
             # self.scientific_advisor,
             self.presentation_order,
         ]
-        
+
         return all(field is not None for field in required_fields)
 
 

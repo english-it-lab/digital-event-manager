@@ -78,7 +78,8 @@ class ParticipantService:
         #     raise HTTPException(
         #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Person with id {data.person_id} not found"
         #     )
-        # if data.textbook_level_id and not await self._text_book_level_repository.exists_by_id(data.textbook_level_id):
+        # if data.textbook_level_id and
+        # not await self._text_book_level_repository.exists_by_id(data.textbook_level_id):
         #     raise HTTPException(
         #         status_code=status.HTTP_404_NOT_FOUND,
         #         detail=f"Text book level with id {data.textbook_level_id} not found",

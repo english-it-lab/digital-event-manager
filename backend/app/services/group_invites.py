@@ -3,14 +3,14 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 
 from app.core.config import settings
-from app.models import Group, Person
+from app.enums.group import GroupStatus
+from app.models import Group
 from app.repositories.group import GroupRepository
 from app.repositories.group_participant import GroupParticipantRepository
 from app.repositories.participant import ParticipantRepository
 from app.repositories.person import PersonRepository
 from app.schemas import InviteTokenResponse
 from app.services.jwt import JwtService
-from app.enums.group import GroupStatus
 
 
 class GroupInviteService:
@@ -22,7 +22,7 @@ class GroupInviteService:
         group_repository: GroupRepository,
         participant_repository: ParticipantRepository,
         group_participant_repository: GroupParticipantRepository,
-        person_repository: PersonRepository
+        person_repository: PersonRepository,
     ) -> None:
         self._jwt_service = jwt_service
         self._group_repository = group_repository
@@ -33,7 +33,7 @@ class GroupInviteService:
     async def create_invite_token(self, group_id: int, person_id: int) -> InviteTokenResponse:
         if not await self._group_repository.is_leader(group_id, person_id):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-        
+
         participant = await self._group_participant_repository.get_participant_by_group_and_person(
             group_id=group_id, person_id=person_id
         )

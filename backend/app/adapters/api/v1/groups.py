@@ -47,7 +47,7 @@ async def create_group(
     match result:
         case Group() as group:
             return GroupRead.model_validate(group)
-        
+
         case "INCOMPLETE_PROFILE":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="There are empty fields in users profile"
@@ -62,9 +62,9 @@ async def create_group(
 @router.patch("/", response_model=GroupRead)
 async def update_group(
     user_id: Annotated[int, Depends(get_current_user)],
-    group_id: int, 
-    payload: GroupUpdate, 
-    service: Annotated[GroupService, Depends(get_group_service)]
+    group_id: int,
+    payload: GroupUpdate,
+    service: Annotated[GroupService, Depends(get_group_service)],
 ) -> GroupRead:
     result = await service.update_group(user_id, group_id, payload)
 
@@ -123,7 +123,8 @@ async def submit_group(
 
         case "INCOMPLETE_PROFILE":
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="To sumbit all participants must fill their respective participant data"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="To sumbit all participants must fill their respective participant data",
             )
 
 
@@ -193,8 +194,6 @@ async def join_by_token(
     group = await service.join_by_token(token=token, person_id=person_id)
 
     if group is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="There are empty fields in users profile"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="There are empty fields in users profile")
 
     return GroupRead.model_validate(group)

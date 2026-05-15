@@ -17,7 +17,7 @@ class OrganizerRepository:
     async def exists_by_id(self, organizer_id: int) -> bool:
         stmt = select(exists().where(Organizer.id == organizer_id))
         return await self._session.scalar(stmt)
-    
+
     async def exists_by_person_id(self, person_id: int) -> bool:
         stmt = select(exists().where(Organizer.person_id == person_id))
         return await self._session.scalar(stmt)

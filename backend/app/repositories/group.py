@@ -90,8 +90,8 @@ class GroupRepository:
             .where(GroupParticipant.group_id == group_id)
             .join(Participant, GroupParticipant.participant_id == Participant.id)
             .where(Participant.person_id == user_id)
-            .where(Participant.is_group_leader == True)
+            .where(Participant.is_group_leader)
         )
-        
+
         result = await self._session.execute(stmt)
         return result.scalar() is not None
