@@ -353,6 +353,8 @@ class ParticipantUpdate(BaseModel):
     presentation_topic: str | None = None
     is_notification_allowed: bool = Field(default=True)
     password_hash: str | None = None
+    abstract: str | None = None
+    presentation_order: int | None = None
 
 
 class GroupParticipantBase(BaseModel):

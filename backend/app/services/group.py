@@ -9,7 +9,7 @@ from app.repositories.group_participant import GroupParticipantRepository
 from app.repositories.participant import ParticipantRepository
 from app.repositories.section import SectionRepository
 from app.repositories.person import PersonRepository
-from app.schemas import GroupCreate, GroupFilter, GroupUpdate, ParticipantFilter
+from app.schemas import GroupCreate, GroupFilter, GroupUpdate
 
 
 class GroupService:
@@ -36,7 +36,7 @@ class GroupService:
         return await self._repository.get_group_by_id(group_id)
 
     async def create_group(self, user_id: int, payload: GroupCreate) -> Group | Literal["INCOMPLETE_PROFILE", "SECTION_NOT_FOUND"]:
-        person = self._person_repository.get_person_by_id(user_id)
+        person = await self._person_repository.get_person_by_id(user_id)
 
         if not person.is_profile_complete:
             return "INCOMPLETE_PROFILE"
@@ -84,13 +84,13 @@ class GroupService:
         if group is None:
             return "NOT_FOUND"
 
-        if not self._repository.is_leader(group_id, user_id):
+        if not await self._repository.is_leader(group_id, user_id):
             return "NOT_LEADER"
 
         if group.status != GroupStatus.FORMING:
             return "TRANSITION_ERROR"
         
-        participants = self._participant_repository.list_participants_by_group_id(group_id)
+        participants = await self._participant_repository.list_participants_by_group_id(group_id)
         for participant in participants:
             if not participant.is_profile_complete:
                 return "INCOMPLETE_PROFILE"
@@ -100,7 +100,7 @@ class GroupService:
         return group
 
     async def approve_group(self, user_id: int, group_id: int) -> Group | Literal["NOT_ORGANIZER", "NOT_FOUND", "TRANSITION_ERROR"]:
-        if not self._organizer_repository.exists_by_id(user_id):
+        if not await self._organizer_repository.exists_by_person_id(user_id):
             return "NOT_ORGANIZER"
 
         group = await self._repository.get_group_by_id(group_id)
@@ -115,7 +115,7 @@ class GroupService:
         return group
 
     async def reject_group(self, user_id: int, group_id: int) -> Group | Literal["NOT_ORGANIZER", "NOT_FOUND", "TRANSITION_ERROR"]:
-        if not self._organizer_repository.exists_by_id(user_id):
+        if not await self._organizer_repository.exists_by_person_id(user_id):
             return "NOT_ORGANIZER"
 
         group = await self._repository.get_group_by_id(group_id)

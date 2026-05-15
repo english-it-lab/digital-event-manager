@@ -38,11 +38,11 @@ async def get_group(
 
 @router.post("/", response_model=GroupRead, status_code=status.HTTP_201_CREATED)
 async def create_group(
+    user_id: Annotated[int, Depends(get_current_user)],
     payload: GroupCreate,
     service: Annotated[GroupService, Depends(get_group_service)],
-    person_id: Annotated[int, Depends(get_current_user)],
 ) -> GroupRead:
-    result = await service.create_group(payload=payload, person_id=person_id)
+    result = await service.create_group(user_id, payload)
 
     match result:
         case Group() as group:
@@ -61,9 +61,12 @@ async def create_group(
 
 @router.patch("/", response_model=GroupRead)
 async def update_group(
-    group_id: int, payload: GroupUpdate, service: Annotated[GroupService, Depends(get_group_service)]
+    user_id: Annotated[int, Depends(get_current_user)],
+    group_id: int, 
+    payload: GroupUpdate, 
+    service: Annotated[GroupService, Depends(get_group_service)]
 ) -> GroupRead:
-    result = await service.update_group(group_id, payload)
+    result = await service.update_group(user_id, group_id, payload)
 
     match result:
         case "NOT_FOUND":
@@ -78,10 +81,11 @@ async def update_group(
 
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_group(
+    user_id: Annotated[int, Depends(get_current_user)],
     group_id: int,
     service: Annotated[GroupService, Depends(get_group_service)],
 ) -> None:
-    result = await service.delete_group(group_id)
+    result = await service.delete_group(user_id, group_id)
 
     match result:
         case "NOT_FOUND":
@@ -96,10 +100,11 @@ async def delete_group(
 
 @router.post("/{group_id}/submit")
 async def submit_group(
+    user_id: Annotated[int, Depends(get_current_user)],
     group_id: int,
     service: Annotated[GroupService, Depends(get_group_service)],
 ) -> GroupRead:
-    result = await service.submit_group(group_id)
+    result = await service.submit_group(user_id, group_id)
 
     match result:
         case Group() as group:
@@ -124,10 +129,11 @@ async def submit_group(
 
 @router.post("/{group_id}/approve")
 async def approve_group(
+    user_id: Annotated[int, Depends(get_current_user)],
     group_id: int,
     service: Annotated[GroupService, Depends(get_group_service)],
 ) -> GroupRead:
-    result = await service.approve_group(group_id)
+    result = await service.approve_group(user_id, group_id)
 
     match result:
         case Group() as group:
@@ -147,10 +153,11 @@ async def approve_group(
 
 @router.post("/{group_id}/reject")
 async def reject_group(
+    user_id: Annotated[int, Depends(get_current_user)],
     group_id: int,
     service: Annotated[GroupService, Depends(get_group_service)],
 ) -> GroupRead:
-    result = await service.reject_group(group_id)
+    result = await service.reject_group(user_id, group_id)
 
     match result:
         case Group() as group:

@@ -281,11 +281,14 @@ class Participant(Base):
     @property
     def is_profile_complete(self) -> bool:
         required_fields = [
-            self.faculty_id,
-            self.course_id,
-            self.teacher_id,
-            self.textbook_level_id,
-            self.presentation_topic
+            # self.faculty_id,
+            # self.course_id,
+            # self.teacher_id,
+            # self.textbook_level_id,
+            self.presentation_topic,
+            self.abstract,
+            # self.scientific_advisor,
+            self.presentation_order,
         ]
         
         return all(field is not None for field in required_fields)
