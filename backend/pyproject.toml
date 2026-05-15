@@ -5,11 +5,14 @@ description = "Digital event manager backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiofiles",
     "alembic",
     "asyncpg",
+    "email-validator",
     "fastapi",
     "pydantic-settings",
     "python-dotenv",
+    "python-jose[cryptography]",
     "sqlalchemy",
     "uvicorn[standard]",
     "reportlab",

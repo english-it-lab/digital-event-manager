@@ -11,7 +11,7 @@ from app.core.config import settings
 
 
 def get_engine() -> AsyncEngine:
-    return create_async_engine(settings.database_url, echo=settings.db_echo, future=True)
+    return create_async_engine(settings.database_url, echo=settings.db_echo, future=True, isolation_level="AUTOCOMMIT")
 
 
 engine = get_engine()

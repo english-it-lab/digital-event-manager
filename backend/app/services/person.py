@@ -1,33 +1,60 @@
-from collections.abc import Sequence
+from fastapi import HTTPException, status
 
 from app.models import Person
 from app.repositories.person import PersonRepository
-from app.schemas import PersonCreate
+from app.schemas import PersonRead, PersonUpdate
 
 
 class PersonService:
-    """Business logic for people."""
+    """Business logic for jury score operations."""
 
-    def __init__(self, repository: PersonRepository) -> None:
-        self._repository = repository
+    def __init__(self, person_repository: PersonRepository) -> None:
+        self._person_repository = person_repository
 
-    async def list_people(self, skip: int = 0, limit: int = 100) -> Sequence[Person]:
-        return await self._repository.list_people(skip, limit)
+    async def get_person_by_id(self, person_id: int) -> PersonRead:
+        """
+        Retrieve person data by id.
+        """
+        # Validate person exists
+        person = await self._person_repository.get_person_by_id(person_id)
+        if person is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Person with id {person_id} not found",
+            )
 
-    async def get_person(self, person_id: int) -> Person | None:
-        return await self._repository.get_person_by_id(person_id)
+        return PersonRead.model_validate(person)
 
-    async def create_person(self, payload: PersonCreate) -> Person:
-        return await self._repository.create_person(payload)
+    async def put_person(self, person_payload: PersonUpdate) -> PersonRead:
+        """
+        Put person data
+        """
 
-    async def update_person(self, person_id: int, payload: PersonCreate) -> Person:
-        person = await self._repository.get_person_by_id(person_id)
-        if not person:
-            raise ValueError(f"Человек {person_id} не найден")
-        return await self._repository.update_person(person, payload)
+        person = Person(**person_payload.model_dump())
+        person = await self._person_repository.put_person(person)
 
-    async def delete_person(self, person_id: int) -> None:
-        person = await self._repository.get_person_by_id(person_id)
-        if not person:
-            raise ValueError(f"Человек {person_id} не найден")
-        await self._repository.delete_person(person)
+        return PersonRead.model_validate(person)
+
+    async def update_person(self, person_payload: PersonUpdate) -> PersonRead:
+        """
+        Update person data, if it exists
+        """
+        if await self._person_repository.get_person_by_id(person_payload.id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Person with id {person_payload.id} doesn't exist",
+            )
+
+        return PersonRead.model_validate(await self.put_person(person_payload))
+
+    async def create_person(self, person_payload: PersonUpdate) -> PersonRead:
+        """
+        Create person, if doesn't it exists
+        """
+        if await self._person_repository.get_person_by_id(person_payload.id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Person with id {person_payload.id} doesn't exist",
+            )
+
+        return PersonRead.model_validate(await self.put_person(person_payload))

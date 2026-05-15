@@ -23,37 +23,26 @@ class PersonRepository:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_person(self, data: PersonCreate) -> Person:
-        person = Person(
-            first_name=data.first_name,
-            last_name=data.last_name,
-            middle_name=data.middle_name,
-            email=data.email,
-            title=data.title,
-            degree=data.degree,
-            position=data.position,
-            workplace=data.workplace,
-            tg_name=data.tg_name,
-        )
+    """
+        CREATES OR UPDATES PERSON ENTITY
+    """
+
+    async def put_person(self, person: Person) -> Person:
+        merged = await self._session.merge(person)
+        await self._session.commit()
+        await self._session.refresh(merged)
+        return merged
+
+    async def get_person_by_email(self, email: str) -> Person | None:
+        stmt = select(Person).where(Person.email == email)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create_person(self, email: str) -> Person:
+        person = Person(email=email)
+
         self._session.add(person)
-        await self._session.commit()
+
+        await self._session.flush()
         await self._session.refresh(person)
         return person
-
-    async def update_person(self, person: Person, data: PersonCreate) -> Person:
-        person.first_name = data.first_name
-        person.last_name = data.last_name
-        person.middle_name = data.middle_name
-        person.email = data.email
-        person.title = data.title
-        person.degree = data.degree
-        person.position = data.position
-        person.workplace = data.workplace
-        person.tg_name = data.tg_name
-        await self._session.commit()
-        await self._session.refresh(person)
-        return person
-
-    async def delete_person(self, person: Person) -> None:
-        await self._session.delete(person)
-        await self._session.commit()
