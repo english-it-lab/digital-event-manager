@@ -168,6 +168,12 @@ def get_section_jury_service(
     )
 
 
+def get_person_repository(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SectionRepository:
+    return PersonRepository(session)
+
+
 def get_event_program_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> EventProgramService:
@@ -204,24 +210,21 @@ def get_venues(
     return VenuesService(repository)
 
 
-def get_person_service(
+def get_organizer_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> PersonService:
-    repository = PersonRepository(session)
-    return PersonService(repository)
+) -> OrganizerRepository:
+    return OrganizerRepository(session)
 
 
 def get_organizer_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
+    repository: Annotated[OrganizerRepository, Depends(get_organizer_repository)],
 ) -> OrganizerService:
-    repository = OrganizerRepository(session)
     return OrganizerService(repository)
 
 
 def get_person_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> PersonService:
-    person_repository = PersonRepository(session)
     return PersonService(person_repository=person_repository)
 
 
@@ -257,15 +260,19 @@ def get_participant_repository(session: Annotated[AsyncSession, Depends(get_sess
 
 def get_group_service(
     group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
+    organizer_repository: Annotated[OrganizerRepository, Depends(get_organizer_repository)],
     section_repository: Annotated[SectionRepository, Depends(get_section_repository)],
     group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> GroupService:
     return GroupService(
         repository=group_repository,
+        organizer_repository=organizer_repository,
         section_repository=section_repository,
         group_participant_repository=group_participant_repository,
         participant_repository=participant_repository,
+        person_repository=person_repository,
     )
 
 
@@ -274,12 +281,14 @@ def get_group_invite_service(
     group_repository: Annotated[GroupRepository, Depends(get_group_repository)],
     group_participant_repository: Annotated[GroupParticipantRepository, Depends(get_group_participant_repository)],
     participant_repository: Annotated[ParticipantRepository, Depends(get_participant_repository)],
+    person_repository: Annotated[PersonRepository, Depends(get_person_repository)],
 ) -> GroupInviteService:
     return GroupInviteService(
         jwt_service=jwt_service,
         group_repository=group_repository,
         group_participant_repository=group_participant_repository,
         participant_repository=participant_repository,
+        person_repository=person_repository,
     )
 
 
@@ -316,7 +325,7 @@ async def get_jwt_payload(
     jwt_token = credentials.credentials
 
     try:
-        payload = await jwt_service.decode_jwt(jwt_token)
+        payload = await jwt_service.decode_auth_jwt(jwt_token)
     except Exception as exc:
         raise invalid_jwt_exception from exc
 

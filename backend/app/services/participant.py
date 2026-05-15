@@ -58,31 +58,32 @@ class ParticipantService:
         """
         Update participant details.
         """
-        if data.faculty_id and not await self._faculty_repository.exists_by_id(data.faculty_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Faculty with id {data.faculty_id} not found"
-            )
-        if data.course_id and not await self._course_repository.exists_by_id(data.course_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Course with id {data.course_id} not found"
-            )
-        if data.teacher_id and not await self._teacher_repository.exists_by_id(data.teacher_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Teacher with id {data.teacher_id} not found"
-            )
-        if data.section_id and not await self._section_repository.exists_by_id(data.section_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Section with id {data.section_id} not found"
-            )
-        if data.person_id and not await self._person_repository.exists_by_id(data.person_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Person with id {data.person_id} not found"
-            )
-        if data.textbook_level_id and not await self._text_book_level_repository.exists_by_id(data.textbook_level_id):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Text book level with id {data.textbook_level_id} not found",
-            )
+        # if data.faculty_id and not await self._faculty_repository.exists_by_id(data.faculty_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Faculty with id {data.faculty_id} not found"
+        #     )
+        # if data.course_id and not await self._course_repository.exists_by_id(data.course_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Course with id {data.course_id} not found"
+        #     )
+        # if data.teacher_id and not await self._teacher_repository.exists_by_id(data.teacher_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Teacher with id {data.teacher_id} not found"
+        #     )
+        # if data.section_id and not await self._section_repository.exists_by_id(data.section_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Section with id {data.section_id} not found"
+        #     )
+        # if data.person_id and not await self._person_repository.exists_by_id(data.person_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND, detail=f"Person with id {data.person_id} not found"
+        #     )
+        # if data.textbook_level_id and
+        # not await self._text_book_level_repository.exists_by_id(data.textbook_level_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND,
+        #         detail=f"Text book level with id {data.textbook_level_id} not found",
+        #     )
 
         participant = await self._repository.update_participant(participant_id, data)
         if participant is None:

@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Faculty, Participant
+from app.models import Faculty, GroupParticipant, Participant
 from app.schemas import ParticipantCreate, ParticipantUpdate
 
 
@@ -27,6 +27,16 @@ class ParticipantRepository:
         stmt = select(Participant).order_by(Participant.id).offset(skip).limit(limit)
         result = await self._session.execute(stmt)
         return result.scalars().all()
+
+    async def list_participants_by_group_id(self, group_id: int) -> Sequence[Participant]:
+        stmt = (
+            select(Participant)
+            .join(GroupParticipant, GroupParticipant.participant_id == Participant.id)
+            .where(GroupParticipant.group_id == group_id)
+        )
+
+        result = await self._session.execute(stmt)
+        return result.scalars().unique().all()
 
     async def get_participant_by_id(self, participant_id: int) -> Participant | None:
         """

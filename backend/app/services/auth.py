@@ -29,4 +29,4 @@ class AuthService:
         if person is None:
             person = await self._person_repository.create_person(email)
 
-        return await self._jwt_service.create_jwt(person=person)
+        return await self._jwt_service.create_auth_jwt(person=person)

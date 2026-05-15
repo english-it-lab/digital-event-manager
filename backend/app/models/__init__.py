@@ -68,6 +68,21 @@ class Person(Base):
         back_populates="scientific_advisor", foreign_keys="Participant.scientific_advisor_id"
     )
 
+    @property
+    def is_profile_complete(self) -> bool:
+        required_fields = [
+            self.first_name,
+            self.last_name,
+            self.middle_name,
+            self.title,
+            self.degree,
+            self.position,
+            self.workplace,
+            self.tg_name,
+        ]
+
+        return all(field is not None for field in required_fields)
+
 
 class Organizer(Base):
     __tablename__ = "organizers"
@@ -262,6 +277,21 @@ class Participant(Base):
     group_participants: Mapped[list[GroupParticipant]] = relationship(back_populates="participant")
     jury_scores: Mapped[list[JuryScore]] = relationship(back_populates="participant")
     organizer_changes: Mapped[list[OrganizerParticipantChange]] = relationship(back_populates="participant")
+
+    @property
+    def is_profile_complete(self) -> bool:
+        required_fields = [
+            # self.faculty_id,
+            # self.course_id,
+            # self.teacher_id,
+            # self.textbook_level_id,
+            self.presentation_topic,
+            self.abstract,
+            # self.scientific_advisor,
+            self.presentation_order,
+        ]
+
+        return all(field is not None for field in required_fields)
 
 
 class GroupParticipant(Base):
