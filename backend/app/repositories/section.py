@@ -78,7 +78,6 @@ class SectionRepository:
         await self._session.commit()
         return True
 
-
     async def get_sections_by_event(self, event_id: int) -> Sequence[Section]:
         stmt = (
             select(Section)

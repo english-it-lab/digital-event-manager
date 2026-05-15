@@ -8,7 +8,6 @@ from docx.shared import Cm, Pt
 
 
 class DocGeneratorService:
-
     def generate_event_program(self, program_data: dict) -> bytes:
         doc = Document()
 

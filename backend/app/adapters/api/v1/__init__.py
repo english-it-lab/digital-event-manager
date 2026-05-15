@@ -37,9 +37,7 @@ router.include_router(events.router, prefix="/events")
 router.include_router(venues.router, prefix="/venues")
 router.include_router(people.router, prefix="/people")
 router.include_router(organizers.router, prefix="/organizers")
-router.include_router(
-    technical_requirements.router, prefix="/technical-requirements"
-)
+router.include_router(technical_requirements.router, prefix="/technical-requirements")
 router.include_router(poster_contents.router, prefix="/poster-contents")
 router.include_router(juries.router, prefix="/juries")
 router.include_router(participant_scores.router, prefix="/participants/{participant_id}/scores")

@@ -14,16 +14,19 @@ class EventRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def list_events(self)-> Sequence[Event]:
+    async def list_events(self) -> Sequence[Event]:
         stmt = select(Event).order_by(Event.name)
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
-
     async def create_event(self, data: EventCreate) -> Event:
-        event = Event(venue_id=data.venue_id,
-            organizer_id=data.organizer_id,name=data.name,
-            type=data.type, event_date=data.event_date)
+        event = Event(
+            venue_id=data.venue_id,
+            organizer_id=data.organizer_id,
+            name=data.name,
+            type=data.type,
+            event_date=data.event_date,
+        )
 
         self._session.add(event)
 
@@ -31,7 +34,6 @@ class EventRepository:
         await self._session.flush()
 
         return event
-
 
     async def get_event_with_organizer(self, event_id: int) -> Event | None:
         stmt = (

@@ -29,18 +29,16 @@ from app.repositories.technical_requirement import (
 from app.repositories.textbook_level import TextbookLevelRepository
 from app.repositories.topic import TopicRepository
 from app.repositories.university import UniversityRepository
-from app.services.committee import CommitteeService
-from app.services.jury import JuryService
-from app.services.jury_score import JuryScoreService
-from app.services.organizer import OrganizerService
 from app.schemas import AuthPayload
 from app.services.auth import AuthService
+from app.services.committee import CommitteeService
 from app.services.email_confirmation import EmailConfirmationService
 from app.services.group import GroupService
 from app.services.group_invites import GroupInviteService
 from app.services.jury import JuryService
 from app.services.jury_score import JuryScoreService
 from app.services.jwt import JwtService
+from app.services.organizer import OrganizerService
 from app.services.participant import ParticipantService
 from app.services.participant_ranking import ParticipantRankingService
 from app.services.person import PersonService
@@ -201,7 +199,7 @@ def get_doc_generator_service() -> DocGeneratorService:
 
 def get_venues(
     session: Annotated[AsyncSession, Depends(get_session)],
-)-> VenuesService:
+) -> VenuesService:
     repository = VenueRepository(session)
     return VenuesService(repository)
 
@@ -218,6 +216,8 @@ def get_organizer_service(
 ) -> OrganizerService:
     repository = OrganizerRepository(session)
     return OrganizerService(repository)
+
+
 def get_person_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> PersonService:

@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import Faculty, Participant
-from app.models import Participant
 from app.schemas import ParticipantCreate, ParticipantUpdate
 
 
@@ -56,6 +55,7 @@ class ParticipantRepository:
         )
         result = await self._session.execute(stmt)
         return result.scalars().all()
+
     async def create_full_participant(self, data: ParticipantCreate) -> Participant | None:
         """
         Create a new participant.

@@ -19,20 +19,12 @@ class OrganizerRepository:
         return await self._session.scalar(stmt)
 
     async def list_organizers(self) -> Sequence[Organizer]:
-        stmt = (
-            select(Organizer)
-            .options(selectinload(Organizer.person))
-            .order_by(Organizer.id)
-        )
+        stmt = select(Organizer).options(selectinload(Organizer.person)).order_by(Organizer.id)
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
     async def get_organizer_by_id(self, organizer_id: int) -> Organizer | None:
-        stmt = (
-            select(Organizer)
-            .where(Organizer.id == organizer_id)
-            .options(selectinload(Organizer.person))
-        )
+        stmt = select(Organizer).where(Organizer.id == organizer_id).options(selectinload(Organizer.person))
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 

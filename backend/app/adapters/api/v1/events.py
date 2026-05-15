@@ -14,20 +14,16 @@ from app.services.pdf_generator import PDFGeneratorService
 
 router = APIRouter(tags=["events"])
 
+
 @router.get("/", response_model=list[EventRead])
 async def list_events(
     service: Annotated[EventProgramService, Depends(get_event_program_service)],
 ) -> list[EventRead]:
     events = await service.list_events()
-    return [
-        EventRead.model_validate(event)
-        for event in events
-    ]
+    return [EventRead.model_validate(event) for event in events]
 
 
-@router.post(
-    "/", response_model=EventRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=EventRead, status_code=status.HTTP_201_CREATED)
 async def create_event(
     payload: EventCreate,
     service: Annotated[EventProgramService, Depends(get_event_program_service)],
@@ -48,14 +44,12 @@ async def generate_event_program_pdf(
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename=program_event_{event_id}.pdf"
-            }
+            headers={"Content-Disposition": f"attachment; filename=program_event_{event_id}.pdf"},
         )
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка генерации PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации PDF: {str(e)}") from e
 
 
 @router.get("/{event_id}/program/doc")
@@ -70,9 +64,7 @@ async def generate_event_program_doc(
         return Response(
             content=doc_bytes,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={
-                "Content-Disposition": f"attachment; filename=program_event_{event_id}.docx"
-            }
+            headers={"Content-Disposition": f"attachment; filename=program_event_{event_id}.docx"},
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
@@ -89,4 +81,4 @@ async def get_event_program_json(
         program_data = await program_service.get_event_program_data(event_id)
         return program_data
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e

@@ -14,15 +14,10 @@ async def list_venues(
     service: Annotated[VenuesService, Depends(get_venues)],
 ) -> list[VenueRead]:
     venues = await service.list_venues()
-    return [
-        VenueRead.model_validate(venue)
-        for venue in venues
-    ]
+    return [VenueRead.model_validate(venue) for venue in venues]
 
 
-@router.post(
-    "/", response_model=VenueRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=VenueRead, status_code=status.HTTP_201_CREATED)
 async def create_venue(
     payload: VenueCreate,
     service: Annotated[VenuesService, Depends(get_venues)],
