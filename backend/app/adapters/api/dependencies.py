@@ -6,11 +6,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
-<<<<<<< feature/program_generation
 from app.repositories.committee_member import CommitteeMemberRepository
-=======
 from app.repositories.course import CourseRepository
->>>>>>> main
 from app.repositories.event import EventRepository
 from app.repositories.faculty import FacultyRepository
 from app.repositories.group import GroupRepository

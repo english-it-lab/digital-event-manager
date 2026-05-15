@@ -81,6 +81,9 @@ class PersonMyselfUpdate(PersonBase):
     pass
 
 
+PersonCreate = PersonBase
+
+
 class JwtFields(StrEnum):
     PERSON_ID = "PERSON_ID"
     EXPIRATION_DATE = "EXPIRATION_DATE"
