@@ -39,7 +39,7 @@ select = [
 ignore = []
 
 [tool.ruff.lint.isort]
-known-first-party = ["app", "backend"]
+known-first-party = ["backend"]
 
 [tool.ruff.format]
 quote-style = "double"
