@@ -89,3 +89,5 @@ After starting the API server, you can open the interactive Swagger UI in your b
 ```bash
 http://localhost:8000/docs
 ```
+## Issues
+If you encounter the error ./docker-entrypoint.sh or ./generate_api.sh not found when starting the Docker container, try changing the format of the CRLF control characters to LF in these files
